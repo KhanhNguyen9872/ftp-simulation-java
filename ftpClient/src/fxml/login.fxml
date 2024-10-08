@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="164.0" prefWidth="358.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FTPLoginController">
+   <children>
+      <TextField fx:id="tf_IPAddress" alignment="CENTER" layoutX="60.0" layoutY="23.0" prefHeight="23.0" prefWidth="173.0" promptText="127.0.0.1" text="127.0.0.1" />
+      <Label layoutX="29.0" layoutY="26.0" text="IP:" />
+      <TextField fx:id="tf_Port" alignment="CENTER" layoutX="281.0" layoutY="22.0" prefHeight="23.0" prefWidth="53.0" promptText="21" text="8021" />
+      <Label layoutX="244.0" layoutY="26.0" text="Port:" />
+      <TextField fx:id="tf_Username" alignment="CENTER" layoutX="101.0" layoutY="57.0" prefHeight="23.0" prefWidth="233.0" text="root" />
+      <Label layoutX="26.0" layoutY="61.0" text="Username:" />
+      <TextField fx:id="tf_Password" alignment="CENTER" layoutX="101.0" layoutY="92.0" prefHeight="23.0" prefWidth="233.0" text="root" />
+      <Label layoutX="26.0" layoutY="96.0" text="Password:" />
+      <Button layoutX="195.0" layoutY="126.0" mnemonicParsing="false" onAction="#connectButton" text="Connect" />
+      <Button layoutX="269.0" layoutY="126.0" mnemonicParsing="false" onAction="#exitButton" prefHeight="23.0" prefWidth="63.0" text="Exit" />
+   </children>
+</AnchorPane>
