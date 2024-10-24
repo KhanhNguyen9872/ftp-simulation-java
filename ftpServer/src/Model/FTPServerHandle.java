@@ -3,6 +3,12 @@ package Model;
 import java.io.*;
 import java.net.*;
 import java.util.StringTokenizer;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Arrays;
 
 class FTPClientHandler implements Runnable {
     private ServerSocket dataSocket;
@@ -37,7 +43,7 @@ class FTPClientHandler implements Runnable {
                 System.out.println("Received: '" + line + "'");
                 handleCommand(line);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
@@ -48,7 +54,7 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private String[] nlstHelper(String args) {
+    private Map<String, Boolean> nlstHelper(String args) {
         // Construct the name of the directory to list.
         String filename = this.curPath;
         if (args != null) {
@@ -58,17 +64,34 @@ class FTPClientHandler implements Runnable {
         // Now get a File object, and see if the name we got exists and is a
         // directory.
         File f = new File(filename);
+        Map<String, Boolean> listFile = new LinkedHashMap<>(); 
     
-        if (f.exists() && f.isDirectory()) {
-          return f.list();
-        } else if (f.exists() && f.isFile()) {
-          String[] allFiles = new String[1];
-          allFiles[0] = f.getName();
-          return allFiles;
+        if (f.exists()) {
+            if (f.isDirectory()) {
+                List<String> arrayList = Arrays.asList(f.list());
+                Collections.sort(arrayList, new Comparator<String>() {
+                    @Override
+                    public int compare(String s1, String s2) {
+                        // Compare the first character of each string
+                        return Character.compare(s1.charAt(0), s2.charAt(0));
+                    }
+                });
+
+                for (String string: arrayList) {
+                    File currentFile = new File(f, string);
+                    listFile.put(string, currentFile.isFile());
+                }
+            } 
+
+            if (f.isFile()) {
+                listFile.put(f.getName(), true);
+            }
         } else {
-          return null;
+            listFile = null;
         }
-      }
+
+        return listFile;
+    }
 
     private void handleCommand(String command) {
         StringTokenizer tokenizer = new StringTokenizer(command);
@@ -233,19 +256,22 @@ class FTPClientHandler implements Runnable {
     }
 
     private void handleList(String args) {
-        String[] dirContent = nlstHelper(args);
+        Map<String, Boolean> dirContent = nlstHelper(args);
 
-      if (dirContent == null) {
-        sendResponse("550 File does not exist.");
-      } else {
-        sendResponse("125 Opening ASCII mode data connection for file list.");
+        if (dirContent == null) {
+            sendResponse("550 File does not exist.");
+        } else {
+            sendResponse("125 Opening ASCII mode data connection for file list.");
 
-        for (int i = 0; i < dirContent.length; i++) {
-            sendResponse(dirContent[i]);
+            for (Map.Entry<String, Boolean> entry : dirContent.entrySet()) {
+                String filename = entry.getKey(); // Get the filename
+                Boolean isFile = entry.getValue();
+
+                sendResponse((isFile ? "f" : "d") + '"' + filename + '"');
+            }
+
+            sendResponse("226 Transfer complete.");
         }
-
-        sendResponse("226 Transfer complete.");
-      }
 
     }
 

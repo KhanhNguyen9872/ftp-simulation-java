@@ -1,11 +1,20 @@
 package model;
 
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
+
+import javafx.scene.control.Label;
+
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.io.OutputStream;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class FTPMainModel {
@@ -37,16 +46,35 @@ public class FTPMainModel {
 		
 		if (code.equals("257")) {
 			String path = tokenizer.nextToken();
-			return path;
+			if (path == null || path.isEmpty()) {
+				throw new Exception("Path is null or empty!");
+			}
+			return path.substring(1, path.length() - 1);
 		} else {
 			throw new Exception(str);
 		}
 	};
 	
-	public List<String> getListFile() throws Exception {
+	public Map<String, Boolean> getListLocalFile(String localPath) throws Exception {
+		Map<String, Boolean> listFile = new LinkedHashMap<>();
+		
+		try (Stream<Path> paths = Files.list(Paths.get(localPath))) {
+            paths.forEach(path -> {
+            	String fileName = path.getFileName().toString();
+            	Boolean isFile = Files.isRegularFile(path);
+            	listFile.put(fileName, isFile);
+            });
+        } catch (IOException e) {
+        	e.printStackTrace();
+        };
+        
+        return listFile;
+	}
+	
+	public Map<String, Boolean> getListRemoteFile() throws Exception {
 		String result;
 		String code;
-		List<String> listFile = new ArrayList<>();
+		Map<String, Boolean> listFile = new LinkedHashMap<>();
 		
 		write("NIST");
 		result = readLine();
@@ -59,6 +87,7 @@ public class FTPMainModel {
 		
 		if (code.equals("125")) {
 			// ok
+			Boolean isFile;
 			String name;
 			while ((name = readLine()) != null) {
 				tokenizer = new StringTokenizer(name);
@@ -66,7 +95,9 @@ public class FTPMainModel {
                 	break;
                 };
                 
-                listFile.add(name);
+                isFile = (name.charAt(0) == 'f' ? true : false);
+                name = name.substring(2, name.length() - 1);
+                listFile.put(name, isFile);
             };
 		} else {
 			throw new Exception("Unknown status code!");
@@ -92,5 +123,9 @@ public class FTPMainModel {
 	
 	private BufferedReader getRecv() throws Exception {
 		return new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
+	}
+
+	public void mkdirLocal(String folderName) {
+		
 	};
 }

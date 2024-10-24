@@ -32,10 +32,15 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -45,48 +50,66 @@
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Preferences…" />
-            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" text="Open local folder" />
             <MenuItem mnemonicParsing="false" text="Quit" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
-          <items>
-            <MenuItem mnemonicParsing="false" text="Undo" />
-            <MenuItem mnemonicParsing="false" text="Redo" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Cut" />
-            <MenuItem mnemonicParsing="false" text="Copy" />
-            <MenuItem mnemonicParsing="false" text="Paste" />
-            <MenuItem mnemonicParsing="false" text="Delete" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Select All" />
-            <MenuItem mnemonicParsing="false" text="Unselect All" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem mnemonicParsing="false" text="About ftp-simulation" />
           </items>
         </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="391.0" prefWidth="643.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="413.0" prefWidth="640.0" VBox.vgrow="ALWAYS">
          <children>
             <VBox fx:id="vboxLocal" layoutX="14.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
             <VBox fx:id="vboxRemote" layoutX="361.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
-            <VBox fx:id="vboxLocalToolBox" layoutX="279.0" layoutY="14.0" prefHeight="348.0" prefWidth="39.0" />
-            <VBox fx:id="vboxRemoteToolBox" layoutX="320.0" layoutY="14.0" prefHeight="348.0" prefWidth="39.0" />
+            <VBox fx:id="vboxLocalToolBox" layoutX="279.0" layoutY="14.0" prefHeight="348.0" prefWidth="42.0" style="-fx-border-color: black;">
+               <children>
+                  <Button fx:id="sendFromLocal2Remote" mnemonicParsing="false" prefHeight="23.0" prefWidth="40.0" text="&gt;" />
+                  <ImageView fx:id="reloadLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/reload.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="mkdirLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/mkdir.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="deleteLocal" fitHeight="37.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/delete.png" />
+                     </image>
+                  </ImageView>
+               </children></VBox>
+            <VBox fx:id="vboxRemoteToolBox" layoutX="320.0" layoutY="14.0" prefHeight="348.0" prefWidth="41.0" style="-fx-border-color: black;">
+               <children>
+                  <Button fx:id="sendFromRemote2Local" mnemonicParsing="false" prefHeight="23.0" prefWidth="41.0" text="&lt;" />
+                  <ImageView fx:id="reloadRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/reload.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="mkdirRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/mkdir.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="deleteRemote" fitHeight="40.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/delete.png" />
+                     </image>
+                  </ImageView>
+               </children></VBox>
+            <TextArea editable="false" layoutX="7.0" layoutY="372.0" prefHeight="67.0" prefWidth="622.0" text="Log here">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </TextArea>
          </children>
     </AnchorPane>
+      <Label prefHeight="15.0" prefWidth="640.0" />
   </children>
 </VBox>

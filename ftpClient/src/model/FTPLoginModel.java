@@ -34,10 +34,10 @@ public class FTPLoginModel {
 	}
 	
 	private void ready(Socket socket) throws Exception {
-		BufferedReader recv = this.getRecv(socket);
-		
-		StringTokenizer tokenizer = new StringTokenizer(recv.readLine());
+		StringTokenizer tokenizer = new StringTokenizer(readLine());
 		String code = tokenizer.nextToken();
+		
+		System.out.println();
 		
 		if (!code.equals("220")) {
 			throw new Exception("FTPServer isn't ready!");
@@ -79,8 +79,12 @@ public class FTPLoginModel {
 	};
 	
 	private String readLine() throws Exception {
-		return recv.readLine();
+		return this.recv.readLine();
 	};
+	
+//	private byte readByte() {
+//		this.recv.rea
+//	}
 	
 	private OutputStream getSend(Socket sock) throws Exception {
 		return sock.getOutputStream();
