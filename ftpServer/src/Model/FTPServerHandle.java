@@ -112,6 +112,15 @@ class FTPClientHandler implements Runnable {
             case "PASS":
                 handlePass(tokenizer);
                 break;
+            case "MKD":
+                handleMkd(tokenizer);
+                break;
+            case "DELE":
+                handleDele(tokenizer);
+                break;
+            case "RMD":
+                handleRmd(tokenizer);
+                break;
             case "LIST":
             case "NIST":
                 handleList(args);
@@ -146,6 +155,61 @@ class FTPClientHandler implements Runnable {
                 break;
             default:
                 sendResponse("502 Command not implemented");
+        }
+    }
+
+    private void handleRmd(StringTokenizer tokenizer) {
+        String folderName = tokenizer.nextToken();
+
+        if (folderName == null || folderName.isEmpty()) {
+            sendResponse("550 Empty name");
+        }
+
+        folderName = folderName.substring(1, folderName.length() - 1);
+
+        File directory = new File(this.curPath + "/" + folderName);
+
+        if (directory.delete()) {
+            sendResponse("250 Directory removed successfully.");
+        } else {
+            sendResponse("550 Directory not empty or permission denied.");
+        }
+    }
+
+    private void handleDele(StringTokenizer tokenizer) {
+        String fileName = tokenizer.nextToken();
+
+        if (fileName == null || fileName.isEmpty()) {
+            sendResponse("550 Error");
+        }
+
+        fileName = fileName.substring(1, fileName.length() - 1);
+
+        File file = new File(this.curPath + "/" + fileName);
+
+        if (file.delete()) {
+            sendResponse("250 File deleted successfully.");
+        } else {
+            sendResponse("550 File not found or permission denied.");
+        }
+
+    }
+
+    private void handleMkd(StringTokenizer tokenizer) {
+        String folderName = tokenizer.nextToken();
+
+        if (folderName == null || folderName.isEmpty()) {
+            sendResponse("550 Empty name");
+        }
+
+        folderName = folderName.substring(1, folderName.length() - 1);
+
+        File directory = new File(this.curPath + "/" + folderName);
+
+        if (directory.mkdir()) {
+            sendResponse("257 \"" + folderName + "\"" + " created");
+        } else {
+            sendResponse("550 Permission denied");
         }
     }
 

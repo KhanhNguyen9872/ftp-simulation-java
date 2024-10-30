@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class FTPMainModel {
+	private String localPath = null;
+	private String remotePath = null;
 	private OutputStream send;
 	private BufferedReader recv;
 	private Socket sock;
@@ -37,11 +39,26 @@ public class FTPMainModel {
 		};
 	};
 	
-	public String getCurrentPath() throws Exception {
+	public boolean chdirLocal(String dir) {
+		return false;
+	}
+	
+	public boolean chdirRemote(String dir) {
+		return false;
+	}
+	
+	public String getCurrentLocalPath() {
+		if (localPath == null) {
+			this.localPath = "C:\\";
+		};
+		return this.localPath;
+	}
+	
+	public String getCurrentRemotePath() throws Exception {
 		write("PWD");
 		
 		String str = readLine();
-		StringTokenizer tokenizer = new StringTokenizer(str);
+		StringTokenizer tokenizer = str2token(str);
 		String code = tokenizer.nextToken();
 		
 		if (code.equals("257")) {
@@ -49,16 +66,18 @@ public class FTPMainModel {
 			if (path == null || path.isEmpty()) {
 				throw new Exception("Path is null or empty!");
 			}
-			return path.substring(1, path.length() - 1);
+			this.remotePath = path.substring(1, path.length() - 1);
 		} else {
 			throw new Exception(str);
 		}
+
+		return this.remotePath;
 	};
 	
-	public Map<String, Boolean> getListLocalFile(String localPath) throws Exception {
+	public Map<String, Boolean> getListLocalFile() throws Exception {
 		Map<String, Boolean> listFile = new LinkedHashMap<>();
 		
-		try (Stream<Path> paths = Files.list(Paths.get(localPath))) {
+		try (Stream<Path> paths = Files.list(Paths.get(this.localPath))) {
             paths.forEach(path -> {
             	String fileName = path.getFileName().toString();
             	Boolean isFile = Files.isRegularFile(path);
@@ -78,7 +97,7 @@ public class FTPMainModel {
 		
 		write("NIST");
 		result = readLine();
-		StringTokenizer tokenizer = new StringTokenizer(result);
+		StringTokenizer tokenizer = str2token(result);
 		code = tokenizer.nextToken();
 		
 		if (code.equals("550")) {
@@ -124,8 +143,69 @@ public class FTPMainModel {
 	private BufferedReader getRecv() throws Exception {
 		return new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
 	}
+	
+	private StringTokenizer str2token(String str) {
+		StringTokenizer tokenizer = new StringTokenizer(str);
+		return tokenizer;
+	}
 
-	public void mkdirLocal(String folderName) {
+	public boolean mkdirLocal(String folderName) {
+		return false;
+	}
+	
+	public boolean mkdirRemote(String folderName) throws Exception {
+		String result, code;
+		write("MKD \"" + folderName + "\"");
 		
+		result = readLine();
+		StringTokenizer tokenizer = str2token(result);
+		code = tokenizer.nextToken();
+		
+		if (code.equals("257")) {
+			return true;
+		} else if (code.equals("550")) {
+			return false;
+		}
+		
+		throw new Exception(result);
+	}
+
+	public boolean deleteFolderRemote(String name) throws Exception {
+		String result, code;
+		write("DELE \"" + name + "\"");
+		
+		result = readLine();
+		StringTokenizer tokenizer = str2token(result);
+		code = tokenizer.nextToken();
+		
+		if (code.equals("250")) {
+			return true;
+		} else if (code.equals("550")) {
+			return false;
+		}
+		
+		throw new Exception(result);
+	}
+	
+	public boolean deleteFileRemote(String name) throws Exception {
+		String result, code;
+		write("RMD \"" + "\"");
+		
+		result = readLine();
+		StringTokenizer tokenizer = str2token(result);
+		code = tokenizer.nextToken();
+		
+		if (code.equals("250")) {
+			return true;
+		} else if (code.equals("550")) {
+			return false;
+		}
+		
+		throw new Exception(result);
+	}
+
+	public boolean deleteLocal(String name) {
+		// TODO Auto-generated method stub
+		return false;
 	};
 }

@@ -33,7 +33,6 @@
 -->
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -67,15 +66,29 @@
             <VBox fx:id="vboxRemote" layoutX="361.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
             <VBox fx:id="vboxLocalToolBox" layoutX="279.0" layoutY="14.0" prefHeight="348.0" prefWidth="42.0" style="-fx-border-color: black;">
                <children>
-                  <Button fx:id="sendFromLocal2Remote" mnemonicParsing="false" prefHeight="23.0" prefWidth="40.0" text="&gt;" />
                   <ImageView fx:id="reloadLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/reload.png" />
                      </image>
                   </ImageView>
+                  <ImageView fx:id="copyFromLocal2Remote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/copy.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="moveFromLocal2Remote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/move.png" />
+                     </image>
+                  </ImageView>
                   <ImageView fx:id="mkdirLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/mkdir.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="renameLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/rename.png" />
                      </image>
                   </ImageView>
                   <ImageView fx:id="deleteLocal" fitHeight="37.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
@@ -86,15 +99,29 @@
                </children></VBox>
             <VBox fx:id="vboxRemoteToolBox" layoutX="320.0" layoutY="14.0" prefHeight="348.0" prefWidth="41.0" style="-fx-border-color: black;">
                <children>
-                  <Button fx:id="sendFromRemote2Local" mnemonicParsing="false" prefHeight="23.0" prefWidth="41.0" text="&lt;" />
                   <ImageView fx:id="reloadRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/reload.png" />
                      </image>
                   </ImageView>
+                  <ImageView fx:id="copyFromRemote2Local" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/copy.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="moveFromRemote2Local" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/move.png" />
+                     </image>
+                  </ImageView>
                   <ImageView fx:id="mkdirRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/mkdir.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="renameRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/rename.png" />
                      </image>
                   </ImageView>
                   <ImageView fx:id="deleteRemote" fitHeight="40.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
