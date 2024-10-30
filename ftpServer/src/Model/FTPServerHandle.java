@@ -1,5 +1,8 @@
 package Model;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.*;
 import java.net.*;
 import java.util.StringTokenizer;
@@ -11,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 
 class FTPClientHandler implements Runnable {
+    private int isLoggedIn = -1;
+    private String Rnfr = null;
     private ServerSocket dataSocket;
     private Socket clientSocket;
     private Integer dataPort;
@@ -108,10 +113,18 @@ class FTPClientHandler implements Runnable {
         switch (cmd) {
             case "USER":
                 handleUser(tokenizer);
-                break;
+                return;
             case "PASS":
                 handlePass(tokenizer);
-                break;
+                return;
+        }
+
+        if (this.isLoggedIn != 1) {
+            sendResponse("530 Not logged in.");
+            return;
+        }
+
+        switch (cmd) {
             case "MKD":
                 handleMkd(tokenizer);
                 break;
@@ -120,6 +133,12 @@ class FTPClientHandler implements Runnable {
                 break;
             case "RMD":
                 handleRmd(tokenizer);
+                break;
+            case "RNFR":
+                handleRnfr(tokenizer);
+                break;
+            case "RNTO":
+                handleRnto(tokenizer);
                 break;
             case "LIST":
             case "NIST":
@@ -156,6 +175,42 @@ class FTPClientHandler implements Runnable {
             default:
                 sendResponse("502 Command not implemented");
         }
+    }
+
+    private void handleRnfr(StringTokenizer tokenizer) {
+        String fromName = tokenizer.nextToken();
+        if (fromName == null || fromName.isEmpty()) {
+            return;
+        }
+
+        this.Rnfr = getName(fromName);
+    }
+
+    private void handleRnto(StringTokenizer tokenizer) {
+        String toName = tokenizer.nextToken();
+
+        if (toName == null || toName.isEmpty() || this.Rnfr == null) {
+            sendResponse("501 Syntax error in parameters or arguments.");
+            return;
+        }
+
+        toName = getName(toName);
+
+        // Specify the old file/folder path and the new name
+        Path oldPath = Paths.get(this.curPath + "/" + this.Rnfr);
+        Path newPath = Paths.get(this.curPath + "/" + toName);
+
+        try {
+            // Rename the file/folder
+            Files.move(oldPath, newPath);
+            sendResponse("250 Requested file action okay, completed.");
+        } catch (IOException e) {
+            sendResponse("550 Requested action not taken. File unavailable");
+        }
+    }
+
+    private String getName(String name) {
+        return name.substring(1, name.length() - 1);
     }
 
     private void handleRmd(StringTokenizer tokenizer) {
@@ -214,7 +269,26 @@ class FTPClientHandler implements Runnable {
     }
 
     private void handleCwd(StringTokenizer tokenizer) {
-        String filename = this.curPath;
+        String filename = tokenizer.nextToken();
+
+        if (filename == null || filename.isEmpty()) {
+            sendResponse("500 Syntax error, command unrecognized.");
+            return;
+        }
+
+        
+        Path path = Paths.get(this.curPath + "/" + getName(filename));
+        Path realPath;
+
+        try {
+            realPath = path.normalize().toRealPath();
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse("500 Syntax error, command unrecognized.");
+            return;
+        }
+
+        String newPath = realPath.toString();
     
         // // cd ..
         // if (args.equals("..")) {
@@ -230,11 +304,13 @@ class FTPClientHandler implements Runnable {
         // }
     
         // check if file exists, is directory and is not above root directory
-        File f = new File(filename);
+
+        File f = new File(newPath);
     
-        if (f.exists() && f.isDirectory() && (filename.length() >= this.rootPath.length())) {
-            this.curPath = filename;
-            sendResponse("250 The current directory has been changed to " + this.curPath);
+        if (f.exists() && f.isDirectory() && (newPath.length() >= this.rootPath.length())) {
+            this.Rnfr = null;
+            this.curPath = newPath;
+            sendResponse("250 Requested file action okay, completed.");
         } else {
             sendResponse("550 Requested action not taken. File unavailable.");
         }
@@ -304,8 +380,10 @@ class FTPClientHandler implements Runnable {
     private void handleUser(StringTokenizer tokenizer) {
         String username = tokenizer.nextToken();
         if (this.username.equals(username)) {
+            this.isLoggedIn = 0;
             sendResponse("331 Username OK, need password");
         } else {
+            this.isLoggedIn = -1;
             sendResponse("530 Invalid username");
         };
     }
@@ -313,7 +391,12 @@ class FTPClientHandler implements Runnable {
     private void handlePass(StringTokenizer tokenizer) {
         String password = tokenizer.nextToken();
         if (this.password.equals(password)) {
+            if (this.isLoggedIn != 0) {
+                sendResponse("530 Missing username");
+                return;
+            }
             sendResponse("230 User logged in, proceed");
+            this.isLoggedIn = 1;
         } else {
             sendResponse("530 Invalid password");
         }

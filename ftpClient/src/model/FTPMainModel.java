@@ -18,14 +18,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class FTPMainModel {
+	private String homeLocalPath;
+	private String homeRemotePath;
 	private String localPath = null;
 	private String remotePath = null;
 	private OutputStream send;
 	private BufferedReader recv;
 	private Socket sock;
 	
-	public FTPMainModel() {
-		
+	public FTPMainModel(String homeLocalPath) {
+		this.homeLocalPath = homeLocalPath;
 	};
 	
 	public void setSocket(Socket sock) {
@@ -33,6 +35,8 @@ public class FTPMainModel {
 		try {
 			this.send = this.getSend();
 			this.recv = this.getRecv();
+			
+			this.homeRemotePath = this.getCurrentRemotePath();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -108,6 +112,9 @@ public class FTPMainModel {
 			// ok
 			Boolean isFile;
 			String name;
+			if (!this.homeRemotePath.equals(this.remotePath)) {
+				listFile.put("..", false);
+			}
 			while ((name = readLine()) != null) {
 				tokenizer = new StringTokenizer(name);
                 if (tokenizer.nextToken().equals("226")) {
@@ -154,6 +161,10 @@ public class FTPMainModel {
 	}
 	
 	public boolean mkdirRemote(String folderName) throws Exception {
+		if (folderName == null || folderName.isEmpty()) {
+			return false;
+		}
+		
 		String result, code;
 		write("MKD \"" + folderName + "\"");
 		
@@ -171,6 +182,10 @@ public class FTPMainModel {
 	}
 
 	public boolean deleteFolderRemote(String name) throws Exception {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
 		String result, code;
 		write("DELE \"" + name + "\"");
 		
@@ -188,8 +203,12 @@ public class FTPMainModel {
 	}
 	
 	public boolean deleteFileRemote(String name) throws Exception {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
 		String result, code;
-		write("RMD \"" + "\"");
+		write("RMD \"" + name + "\"");
 		
 		result = readLine();
 		StringTokenizer tokenizer = str2token(result);
@@ -208,4 +227,49 @@ public class FTPMainModel {
 		// TODO Auto-generated method stub
 		return false;
 	};
+	
+	public boolean chdir(String name) throws Exception {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
+		String result, code;
+		
+		write("CWD \"" + name + "\"");
+		
+		result = readLine();
+		StringTokenizer tokenizer = str2token(result);
+		code = tokenizer.nextToken();
+		
+		if (code.equals("250")) {
+			return true;
+		} else if (code.equals("550")) {
+			return false;
+		}
+		
+		throw new Exception(result);
+	}
+
+	public boolean renameRemote(String oldName, String newName) throws Exception {
+		if (oldName == null || newName == null || oldName.isEmpty() || newName.isEmpty()) {
+			return false;
+		}
+		
+		String result, code;
+		
+		write("RNFR  \"" + oldName + "\"");
+		write("RNTO  \"" + newName + "\"");
+		
+		result = readLine();
+		StringTokenizer tokenizer = str2token(result);
+		code = tokenizer.nextToken();
+		
+		if (code.equals("250")) {
+			return true;
+		} else if (code.equals("550")) {
+			return false;
+		}
+		
+		throw new Exception(result);
+	}
 }

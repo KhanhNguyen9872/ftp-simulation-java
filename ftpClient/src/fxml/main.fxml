@@ -47,15 +47,15 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu mnemonicParsing="false" text="File">
+        <Menu fx:id="menuFileExit" mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="Open local folder" />
+            <MenuItem fx:id="menuFileOpenLocal" mnemonicParsing="false" text="Open local folder" />
             <MenuItem mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About ftp-simulation" />
+            <MenuItem fx:id="menuHelpAbout" mnemonicParsing="false" text="About ftp-simulation" />
           </items>
         </Menu>
       </menus>
@@ -66,67 +66,77 @@
             <VBox fx:id="vboxRemote" layoutX="361.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
             <VBox fx:id="vboxLocalToolBox" layoutX="279.0" layoutY="14.0" prefHeight="348.0" prefWidth="42.0" style="-fx-border-color: black;">
                <children>
-                  <ImageView fx:id="reloadLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="reloadLocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/reload.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="copyFromLocal2Remote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="copyFromLocal2RemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/copy.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="moveFromLocal2Remote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="moveFromLocal2RemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/move.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="mkdirLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="mkdirLocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/mkdir.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="renameLocal" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="renameLocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/rename.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="deleteLocal" fitHeight="37.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="deleteLocalImg" fitHeight="37.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/delete.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="propertiesLocalImg" fitHeight="37.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/properties.png" />
                      </image>
                   </ImageView>
                </children></VBox>
             <VBox fx:id="vboxRemoteToolBox" layoutX="320.0" layoutY="14.0" prefHeight="348.0" prefWidth="41.0" style="-fx-border-color: black;">
                <children>
-                  <ImageView fx:id="reloadRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="reloadRemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/reload.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="copyFromRemote2Local" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="copyFromRemote2LocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/copy.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="moveFromRemote2Local" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="moveFromRemote2LocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/move.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="mkdirRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="mkdirRemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/mkdir.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="renameRemote" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="renameRemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/rename.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="deleteRemote" fitHeight="40.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="deleteRemoteImg" fitHeight="40.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/delete.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="propertiesRemoteImg" fitHeight="40.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/img/properties.png" />
                      </image>
                   </ImageView>
                </children></VBox>

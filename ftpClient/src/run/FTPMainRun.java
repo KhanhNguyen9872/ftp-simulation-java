@@ -24,6 +24,7 @@ public class FTPMainRun {
 		
 		FTPMainController controller = loader.getController();
 		controller.setSocket(sock);
+		controller.setStage(primaryStage);
 		
 		primaryStage.setOnCloseRequest(event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?");
