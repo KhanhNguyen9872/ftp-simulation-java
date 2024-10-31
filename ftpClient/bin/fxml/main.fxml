@@ -47,10 +47,10 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu fx:id="menuFileExit" mnemonicParsing="false" text="File">
+        <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem fx:id="menuFileOpenLocal" mnemonicParsing="false" text="Open local folder" />
-            <MenuItem mnemonicParsing="false" text="Quit" />
+            <MenuItem fx:id="menuFileExit" mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">

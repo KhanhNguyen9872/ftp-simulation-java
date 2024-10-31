@@ -2,6 +2,9 @@ package view;
 
 import java.util.Optional;
 
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+import java.io.File;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
@@ -47,8 +50,12 @@ public class FTPMainView {
 	}
 	
 	public String showTextInput(String title, String header, String content) {
+		return this.showTextInput(title, header, content, "");
+	}
+	
+	public String showTextInput(String title, String header, String content, String defaultInput) {
 		String s = null;
-		TextInputDialog dialog = new TextInputDialog();
+		TextInputDialog dialog = new TextInputDialog(defaultInput);
         dialog.setTitle(title);
         dialog.setHeaderText(header);
         dialog.setContentText(content);
@@ -63,6 +70,19 @@ public class FTPMainView {
 		}
         
         return s;
+	}
+	
+	public String showDialogChooseFolder(Stage primaryStage) {		
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Folder");
+
+        File selectedDirectory = directoryChooser.showDialog(primaryStage);
+
+        if (selectedDirectory != null) {
+            return selectedDirectory.getAbsolutePath();
+        }
+        
+        return null;
 	}
 
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.io.OutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -43,17 +44,14 @@ public class FTPMainModel {
 		};
 	};
 	
-	public boolean chdirLocal(String dir) {
-		return false;
-	}
-	
-	public boolean chdirRemote(String dir) {
-		return false;
+	public void setLocalPath(String path) {
+		this.localPath = path;
+		this.homeLocalPath = path;
 	}
 	
 	public String getCurrentLocalPath() {
 		if (localPath == null) {
-			this.localPath = "C:\\";
+			this.localPath = homeLocalPath;
 		};
 		return this.localPath;
 	}
@@ -80,6 +78,10 @@ public class FTPMainModel {
 	
 	public Map<String, Boolean> getListLocalFile() throws Exception {
 		Map<String, Boolean> listFile = new LinkedHashMap<>();
+		
+		if (!this.homeLocalPath.equals(this.localPath)) {
+			listFile.put("..", false);
+		}
 		
 		try (Stream<Path> paths = Files.list(Paths.get(this.localPath))) {
             paths.forEach(path -> {
@@ -157,6 +159,15 @@ public class FTPMainModel {
 	}
 
 	public boolean mkdirLocal(String folderName) {
+		if (folderName == null || folderName.isEmpty()) {
+			return false;
+		}
+		
+		File directory = new File(this.localPath + "/" + folderName);
+		
+		if (directory.mkdir()) {
+			return true;
+		}
 		return false;
 	}
 	
@@ -179,6 +190,34 @@ public class FTPMainModel {
 		}
 		
 		throw new Exception(result);
+	}
+	
+	public boolean deleteFolderLocal(String name) {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
+		File file = new File(this.localPath + "/" + name);
+		
+		if (file.delete()) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean deleteFileLocal(String name) {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
+		File file = new File(this.localPath + "/" + name);
+		
+		if (file.delete()) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	public boolean deleteFolderRemote(String name) throws Exception {
@@ -222,13 +261,35 @@ public class FTPMainModel {
 		
 		throw new Exception(result);
 	}
-
-	public boolean deleteLocal(String name) {
-		// TODO Auto-generated method stub
-		return false;
-	};
 	
-	public boolean chdir(String name) throws Exception {
+	public boolean chdirLocal(String name) {
+		if (name == null || name.isEmpty()) {
+			return false;
+		}
+		
+		Path path = Paths.get(this.localPath + "/" + name);
+        Path realPath;
+
+        try {
+            realPath = path.normalize().toRealPath();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        String newPath = realPath.toString();
+        
+        File f = new File(newPath);
+        
+        if (f.exists() && f.isDirectory() && (newPath.length() >= this.homeLocalPath.length())) {
+        	this.localPath = newPath;
+        	return true;
+        }
+		
+		return false;
+	}
+
+	public boolean chdirRemote(String name) throws Exception {
 		if (name == null || name.isEmpty()) {
 			return false;
 		}
@@ -271,5 +332,23 @@ public class FTPMainModel {
 		}
 		
 		throw new Exception(result);
+	}
+
+	public boolean renameLocal(String oldName, String newName) {
+		if (oldName == null || newName == null || oldName.isEmpty() || newName.isEmpty()) {
+			return false;
+		}
+		
+		Path oldPath = Paths.get(this.localPath + "/" + oldName);
+        Path newPath = Paths.get(this.localPath + "/" + newName);
+
+        try {
+            // Rename the file/folder
+            Files.move(oldPath, newPath);
+            return true;
+        } catch (IOException e) {
+            
+        }
+        return false;
 	}
 }

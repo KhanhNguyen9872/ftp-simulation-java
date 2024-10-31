@@ -134,32 +134,115 @@ public class FTPMainController implements Initializable {
 		try {
 			this.listFileLocal = this.ftpMainModel.getListLocalFile();
 			fileLocalListView.getItems().clear();
+			final Label[] label = {new Label()};
 			
 			for(Map.Entry<String, Boolean> entry: this.listFileLocal.entrySet()) {
 				String fileName = entry.getKey();
 				Boolean isFile = entry.getValue();
 				
-				Label label = new Label((isFile ? "📄" : "📁") + "  " + fileName);
-	        	label.setMaxWidth(Double.MAX_VALUE);
-	        	label.setOnMouseClicked(e -> {
+				if (fileName.equals("..")) {
+					label[0] = new Label(fileName);
+				} else {
+					label[0] = new Label((isFile ? "📄" : "📁") + "  " + fileName);
+				}
+				
+				label[0].setMaxWidth(Double.MAX_VALUE);
+				label[0].setOnMouseClicked(e -> {
 	        		String buttonName = ((Label)e.getSource()).getText();
-	        		this.choosenLocalListView = buttonName.substring(4, buttonName.length());
+					String name;
+					if (buttonName.equals("..")) {
+						name = buttonName;
+					} else {
+						name = buttonName.substring(4, buttonName.length());
+					}
+					
+					MouseButton btn = e.getButton();
+					int clickCount = e.getClickCount();
+					
+					if (btn.equals(MouseButton.PRIMARY)) {
+						switch(clickCount) {
+							case 1:
+								{
+									if (!buttonName.equals("..")) {
+										String typeButton = buttonName.substring(0, 2);
+										if (typeButton.equals("📄")) {
+											this.choosenLocalListViewIsFile = true;
+										} else if (typeButton.equals("📁")) {
+											this.choosenLocalListViewIsFile = false;
+										} else {
+											this.ftpMainView.showMessage("type file/folder Error");
+										}
+						        		this.choosenLocalListView = name;
+									} else {
+										this.choosenLocalListViewIsFile = false;
+										this.choosenLocalListView = "";
+									}
+								}
+				        		break;
+							case 2:
+								{
+									chdirLocal(name);
+									reloadLocalList();
+								}
+								break;
+						}
+					}
+					
+					if (btn.equals(MouseButton.SECONDARY)) {
+						switch(clickCount) {
+							case 1:
+								{
+									if (!buttonName.equals("..")) {
+										String typeButton = buttonName.substring(0, 2);
+										if (typeButton.equals("📄")) {
+											this.choosenLocalListViewIsFile = true;
+										} else if (typeButton.equals("📁")) {
+											this.choosenLocalListViewIsFile = false;
+										} else {
+											this.ftpMainView.showMessage("type file/folder Error");
+										}
+						        		this.choosenLocalListView = name;
+						        		
+						        		this.rightClickLocal.show(label[0], e.getScreenX(), e.getScreenY());
+									} else {
+										this.choosenLocalListViewIsFile = false;
+										this.choosenLocalListView = "";
+									}
+								}
+								break;
+						}
+					}
 	        	});
-	        	Tooltip tooltip = new Tooltip((isFile ? "File: " : "Folder: ") + fileName + " (Local)");
+				Tooltip tooltip;
+				if (fileName.equals("..")) {
+					tooltip = new Tooltip("Back to previous folder (LOCAL)");
+				} else {
+					tooltip = new Tooltip((isFile ? "File: " : "Folder: ") + fileName + " (LOCAL)");
+				}
 				tooltip.setShowDelay(new Duration(200));
-				Tooltip.install(label, tooltip);
-	        	fileLocalListView.getItems().add(label);
+				Tooltip.install(label[0], tooltip);
+	        	fileLocalListView.getItems().add(label[0]);
 			}
         	
 		} catch (Exception e) {
 			e.printStackTrace();
-			// TODO: handle exception
+			this.ftpMainView.showMessage("Error", e.getMessage());
 		}
 	};
 	
-	private void chdir(String dir) {
+	private void chdirLocal(String dir) {
 		try {
-			this.ftpMainModel.chdir(dir);
+			this.ftpMainModel.chdirLocal(dir);
+		} catch (Exception e) {
+			e.printStackTrace();
+			this.ftpMainView.showMessage("Error", e.getMessage());
+			// TODO: handle exception
+		}
+	}
+	
+	private void chdirRemote(String dir) {
+		try {
+			this.ftpMainModel.chdirRemote(dir);
 		} catch (Exception e) {
 			e.printStackTrace();
 			this.ftpMainView.showMessage("Error", e.getMessage());
@@ -224,7 +307,7 @@ public class FTPMainController implements Initializable {
 				        		break;
 							case 2:
 								{
-									chdir(name);
+									chdirRemote(name);
 									reloadRemoteList();
 								}
 								break;
@@ -256,7 +339,12 @@ public class FTPMainController implements Initializable {
 						}
 					}
             	});
-				Tooltip tooltip = new Tooltip((isFile ? "File: " : "Folder: ") + fileName + " (Remote)");
+				Tooltip tooltip;
+				if (fileName.equals("..")) {
+					tooltip = new Tooltip("Back to previous folder (REMOTE)");
+				} else {
+					tooltip = new Tooltip((isFile ? "File: " : "Folder: ") + fileName + " (REMOTE)");
+				}
 				tooltip.setShowDelay(new Duration(200));
 				Tooltip.install(label[0], tooltip);
 				fileRemoteListView.getItems().add(label[0]);
@@ -289,11 +377,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipCopyFromLocal2Remote = new Tooltip("Copy file/folder from (Local) to (Remote)");
+		Tooltip tooltipCopyFromLocal2Remote = new Tooltip("Copy file/folder from (LOCAL) to (REMOTE)");
 		tooltipCopyFromLocal2Remote.setShowDelay(new Duration(200));
 		Tooltip.install(this.copyFromLocal2RemoteImg, tooltipCopyFromLocal2Remote);
 		
-		Tooltip tooltipCopyFromRemote2Local = new Tooltip("Copy file/folder from (Remote) to (Local)");
+		Tooltip tooltipCopyFromRemote2Local = new Tooltip("Copy file/folder from (REMOTE) to (LOCAL)");
 		tooltipCopyFromRemote2Local.setShowDelay(new Duration(200));
 		Tooltip.install(this.copyFromRemote2LocalImg, tooltipCopyFromRemote2Local);
 		
@@ -310,11 +398,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipMoveFromLocal2Remote = new Tooltip("Move file/folder from (Local) to (Remote)");
+		Tooltip tooltipMoveFromLocal2Remote = new Tooltip("Move file/folder from (LOCAL) to (REMOTE)");
 		tooltipMoveFromLocal2Remote.setShowDelay(new Duration(200));
 		Tooltip.install(this.moveFromLocal2RemoteImg, tooltipMoveFromLocal2Remote);
 		
-		Tooltip tooltipMoveFromRemote2Local = new Tooltip("Move file/folder from (Remote) to (Local)");
+		Tooltip tooltipMoveFromRemote2Local = new Tooltip("Move file/folder from (REMOTE) to (LOCAL)");
 		tooltipMoveFromRemote2Local.setShowDelay(new Duration(200));
 		Tooltip.install(this.moveFromRemote2LocalImg, tooltipMoveFromRemote2Local);
 		
@@ -340,11 +428,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipRenameLocal = new Tooltip("Rename file/folder (Local)");
+		Tooltip tooltipRenameLocal = new Tooltip("Rename file/folder (LOCAL)");
 		tooltipRenameLocal.setShowDelay(new Duration(200));
 		Tooltip.install(this.renameLocalImg, tooltipRenameLocal);
 		
-		Tooltip tooltipRenameRemote = new Tooltip("Rename file/folder (Remote)");
+		Tooltip tooltipRenameRemote = new Tooltip("Rename file/folder (REMOTE)");
 		tooltipRenameRemote.setShowDelay(new Duration(200));
 		Tooltip.install(this.renameRemoteImg, tooltipRenameRemote);
 		
@@ -360,11 +448,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipReloadLocal = new Tooltip("Refresh (Local)");
+		Tooltip tooltipReloadLocal = new Tooltip("Refresh (LOCAL)");
 		tooltipReloadLocal.setShowDelay(new Duration(200));
 		Tooltip.install(this.reloadLocalImg, tooltipReloadLocal);
 		
-		Tooltip tooltipReloadRemote = new Tooltip("Refresh (Remote)");
+		Tooltip tooltipReloadRemote = new Tooltip("Refresh (REMOTE)");
 		tooltipReloadRemote.setShowDelay(new Duration(200));
 		Tooltip.install(this.reloadRemoteImg, tooltipReloadRemote);
 		
@@ -374,6 +462,7 @@ public class FTPMainController implements Initializable {
 				this.mkdirLocal();
 			}
 			
+			
 		});
 		
 		this.mkdirRemoteImg.setOnMouseClicked(e -> {
@@ -382,11 +471,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipMkdirLocal = new Tooltip("Create a folder (Local)");
+		Tooltip tooltipMkdirLocal = new Tooltip("Create a folder (LOCAL)");
 		tooltipMkdirLocal.setShowDelay(new Duration(200));
 		Tooltip.install(this.mkdirLocalImg, tooltipMkdirLocal);
 		
-		Tooltip tooltipMkdirRemote = new Tooltip("Create a folder (Remote)");
+		Tooltip tooltipMkdirRemote = new Tooltip("Create a folder (REMOTE)");
 		tooltipMkdirRemote.setShowDelay(new Duration(200));
 		Tooltip.install(this.mkdirRemoteImg, tooltipMkdirRemote);
 		
@@ -413,11 +502,11 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipDeleteLocal = new Tooltip("Delete a file/folder (Local)");
+		Tooltip tooltipDeleteLocal = new Tooltip("Delete a file/folder (LOCAL)");
 		tooltipDeleteLocal.setShowDelay(new Duration(200));
 		Tooltip.install(this.deleteLocalImg, tooltipDeleteLocal);
 		
-		Tooltip tooltipDeleteRemote = new Tooltip("Delete a file/folder (Remote)");
+		Tooltip tooltipDeleteRemote = new Tooltip("Delete a file/folder (REMOTE)");
 		tooltipDeleteRemote.setShowDelay(new Duration(200));
 		Tooltip.install(this.deleteRemoteImg, tooltipDeleteRemote);
 		
@@ -443,13 +532,13 @@ public class FTPMainController implements Initializable {
 			}
 		});
 		
-		Tooltip tooltipPropertiesLocal = new Tooltip("Properties file/folder (Local)");
+		Tooltip tooltipPropertiesLocal = new Tooltip("Properties file/folder (LOCAL)");
 		tooltipPropertiesLocal.setShowDelay(new Duration(200));
-		Tooltip.install(this.deleteLocalImg, tooltipPropertiesLocal);
+		Tooltip.install(this.propertiesLocalImg, tooltipPropertiesLocal);
 		
-		Tooltip tooltipPropertiesRemote = new Tooltip("Properties file/folder (Remote)");
+		Tooltip tooltipPropertiesRemote = new Tooltip("Properties file/folder (REMOTE)");
 		tooltipPropertiesRemote.setShowDelay(new Duration(200));
-		Tooltip.install(this.deleteRemoteImg, tooltipPropertiesRemote);
+		Tooltip.install(this.propertiesRemoteImg, tooltipPropertiesRemote);
 	}
 	
 	private void moveItemRemote() {
@@ -490,7 +579,7 @@ public class FTPMainController implements Initializable {
 		if (oldName.equals("..")) {
 			return;
 		}
-		String newName = this.ftpMainView.showTextInput("Rename [" + oldName + "] (remote)", "Input new name for [" + oldName + "]", "New name: ");
+		String newName = this.ftpMainView.showTextInput("Rename [" + oldName + "] (REMOTE)", "Input new name for [" + oldName + "]", "New name: ", oldName);
 		
 		if (newName == null || newName.isEmpty()) {
 			return;
@@ -511,12 +600,36 @@ public class FTPMainController implements Initializable {
 	}
 
 	private void renameLocal() {
-		// TODO Auto-generated method stub
+		String oldName = this.choosenLocalListView;
+		if (oldName == null || oldName.isEmpty()) {
+			return;
+		}
 		
+		if (oldName.equals("..")) {
+			return;
+		}
+		String newName = this.ftpMainView.showTextInput("Rename [" + oldName + "] (LOCAL)", "Input new name for [" + oldName + "]", "New name: ", oldName);
+		
+		if (newName == null || newName.isEmpty()) {
+			return;
+		}
+		
+		try {
+			if (this.ftpMainModel.renameLocal(oldName, newName)) {
+				reloadLocalList();
+			} else {
+				this.ftpMainView.showMessage("Error", "Cannot rename to [" + newName + "]");
+			}
+			
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			this.ftpMainView.showMessage("Error", e1.getMessage());
+		}
 	}
 
 	private void mkdirLocal() {
-		String folderName = this.ftpMainView.showTextInput("Create folder (remote)", "Input folder name", "Name: ");
+		String folderName = this.ftpMainView.showTextInput("Create folder (LOCAL)", "Input folder name", "Name: ");
 		
 		if (folderName == null || folderName.isEmpty()) {
 			return;
@@ -530,7 +643,7 @@ public class FTPMainController implements Initializable {
 	}
 	
 	private void mkdirRemote() {
-		String folderName = this.ftpMainView.showTextInput("Create folder (remote)", "Input folder name", "Name: ");
+		String folderName = this.ftpMainView.showTextInput("Create folder (REMOTE)", "Input folder name", "Name: ");
 		
 		if (folderName == null || folderName.isEmpty()) {
 			return;
@@ -553,8 +666,18 @@ public class FTPMainController implements Initializable {
 	private void deleteLocal() {
 		String name = (this.choosenLocalListViewIsFile) ? "file" : "folder";
 		
-		if (this.ftpMainView.askYesOrNo("Delete " + name, "Delete " + name + "? [" + choosenLocalListView + "]", "Local path: \"" + this.localPath + "\"")) {
-			this.ftpMainModel.deleteLocal(choosenLocalListView);
+		if (this.ftpMainView.askYesOrNo("Delete " + name, "Delete " + name + "? [" + choosenLocalListView + "]", "LOCAL Path: \"" + this.localPath + "\"")) {
+			if (this.choosenLocalListViewIsFile) {
+				this.ftpMainModel.deleteFileLocal(choosenLocalListView);
+			} else {
+				this.ftpMainModel.deleteFolderLocal(choosenLocalListView);
+			}
+			
+			if (this.choosenLocalListViewIsFile) {
+				this.ftpMainModel.deleteFileLocal(choosenLocalListView);
+			} else {
+				this.ftpMainModel.deleteFolderLocal(choosenLocalListView);
+			}
 			reloadLocalList();
 		}
 	}
@@ -562,12 +685,16 @@ public class FTPMainController implements Initializable {
 	private void deleteRemote() {
 		String name = (this.choosenRemoteListViewIsFile) ? "file" : "folder";
 		
-		if (this.ftpMainView.askYesOrNo("Delete " + name, "Delete " + name + "? [" + choosenRemoteListView + "]", "Remote path: \"" + this.remotePath + "\"")) {
+		if (this.ftpMainView.askYesOrNo("Delete " + name, "Delete " + name + "? [" + choosenRemoteListView + "]", "REMOTE Path: \"" + this.remotePath + "\"")) {
 			try {
-				if (this.choosenLocalListViewIsFile) {
-					this.ftpMainModel.deleteFileRemote(choosenRemoteListView);
+				if (this.choosenRemoteListViewIsFile) {
+					if (!this.ftpMainModel.deleteFileRemote(choosenRemoteListView)) {
+						this.ftpMainView.showMessage("Error", "Cannot delete file [" + choosenRemoteListView + "]");
+					}
 				} else {
-					this.ftpMainModel.deleteFolderRemote(choosenRemoteListView);
+					if (!this.ftpMainModel.deleteFolderRemote(choosenRemoteListView)) {
+						this.ftpMainView.showMessage("Error", "Cannot delete folder [" + choosenRemoteListView + "]");
+					}
 				}
 				
 				reloadRemoteList();
@@ -582,7 +709,7 @@ public class FTPMainController implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		this.ftpMainView = new FTPMainView();
-		this.ftpMainModel = new FTPMainModel("C:\\");
+		this.ftpMainModel = new FTPMainModel("D:\\");
 		
 		this.fileLocalListView = new ListView<>();
 		this.fileRemoteListView = new ListView<>();
@@ -598,7 +725,14 @@ public class FTPMainController implements Initializable {
 	private void prepareMenuItem() {
 		// file
 		this.menuFileOpenLocal.setOnAction(e -> {
+			String path = this.ftpMainView.showDialogChooseFolder(this.primaryStage);
 			
+			if (path == null || path.isEmpty()) {
+				return;
+			}
+			
+			this.ftpMainModel.setLocalPath(path);
+			reloadLocalList();
 		});
 		
 		this.menuFileExit.setOnAction(e -> {
@@ -607,33 +741,42 @@ public class FTPMainController implements Initializable {
 		
 		// help
 		this.menuHelpAbout.setOnAction(e -> {
-			
+			this.ftpMainView.showMessage("ABOUT");
 		});
 	}
 
 	private void prepareContextMenu() {
 		// local
-		
+		this.rightClickLocal = new ContextMenu();
+        MenuItem renameItemLocal = new MenuItem("Rename");
+        MenuItem deleteItemLocal = new MenuItem("Delete");
+        MenuItem propertiesItemLocal = new MenuItem("Properties");
+
+        // Add items to the context menu
+        this.rightClickLocal.getItems().addAll(renameItemLocal, deleteItemLocal, propertiesItemLocal);
+
+        // Set actions for menu items (optional)
+        renameItemLocal.setOnAction(e -> {
+        	renameLocal();
+        });
+        deleteItemLocal.setOnAction(e -> {
+        	deleteLocal();
+        });
+        propertiesItemLocal.setOnAction(e -> {
+        	propertiesLocal();
+        });
 		
 		// remote
 		// Create a context menu with some menu items
         this.rightClickRemote = new ContextMenu();
-        MenuItem copyItemRemote = new MenuItem("Copy");
-        MenuItem moveItemRemote = new MenuItem("Move");
         MenuItem renameItemRemote = new MenuItem("Rename");
         MenuItem deleteItemRemote = new MenuItem("Delete");
         MenuItem propertiesItemRemote = new MenuItem("Properties");
 
         // Add items to the context menu
-        this.rightClickRemote.getItems().addAll(copyItemRemote, moveItemRemote, renameItemRemote, deleteItemRemote, propertiesItemRemote);
+        this.rightClickRemote.getItems().addAll(renameItemRemote, deleteItemRemote, propertiesItemRemote);
 
         // Set actions for menu items (optional)
-        copyItemRemote.setOnAction(e -> {
-        	copyItemRemote();
-        });
-        moveItemRemote.setOnAction(e -> {
-        	moveItemRemote();
-        });
         renameItemRemote.setOnAction(e -> {
         	renameRemote();
         });
