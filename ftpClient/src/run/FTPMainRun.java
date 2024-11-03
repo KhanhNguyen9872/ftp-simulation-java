@@ -26,24 +26,6 @@ public class FTPMainRun {
 		controller.setSocket(sock);
 		controller.setStage(primaryStage);
 		
-		primaryStage.setOnCloseRequest(event -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?");
-            alert.setTitle("Confirm Exit");
-            alert.setHeaderText(null);
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                try {
-					sock.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            } else {
-                event.consume();
-            };
-        });
-		
 		primaryStage.show();
 		controller.run();
 	};

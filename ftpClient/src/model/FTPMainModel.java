@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 
 public class FTPMainModel {
 	private byte[] eof = ByteBuffer.allocate(4).putInt(0xCAFEBABE).array();
+	private String tmpPath;
 	private String homeLocalPath;
 	private String homeRemotePath;
 	private String localPath = null;
@@ -33,8 +34,27 @@ public class FTPMainModel {
 	
 	public FTPMainModel(String homeLocalPath) {
 		this.homeLocalPath = homeLocalPath;
+		String workingFolder = System.getProperty("user.dir");
+		this.tmpPath = workingFolder + "/tmp";
+		System.out.println("Working folder: " + workingFolder);
+		createTempFolder(this.tmpPath);
 	};
 	
+	private void createTempFolder(String path) {
+		File file = new File(path);
+		try {
+			deleteDirectory(file);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		file.mkdirs();
+	}
+	
+	public String getTmpPath() {
+		return tmpPath;
+	}
+
 	public void setSocket(Socket sock) {
 		this.sock = sock;
 		try {
@@ -58,6 +78,62 @@ public class FTPMainModel {
 			this.localPath = homeLocalPath;
 		};
 		return this.localPath;
+	}
+	
+	private void write(String cmd) throws Exception {
+		send.write(cmd.getBytes());
+		send.flush();
+		send.write('\n');
+		send.flush();
+	};
+	
+	private String readLine() throws Exception {
+		return recv.readLine();
+	};
+	
+	private OutputStream getSend() throws Exception {
+		return this.sock.getOutputStream();
+	};
+	
+	private BufferedReader getRecv() throws Exception {
+		return new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
+	}
+	
+	private StringTokenizer str2token(String str) {
+		StringTokenizer tokenizer = new StringTokenizer(str);
+		return tokenizer;
+	}
+	
+	private boolean deleteDirectory(File dir) {
+        // Check if the directory exists
+        if (dir.exists()) {
+            // List all files and directories
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // Recursively delete files and directories
+                    if (file.isDirectory()) {
+                        deleteDirectory(file); // Recurse into subdirectory
+                    }
+                    // Delete file or empty directory
+                    file.delete();
+                }
+            }
+        }
+        // Finally, delete the directory itself
+        return dir.delete();
+    }
+	
+	private int getStatusCode(String data) {
+		int code;
+		StringTokenizer tokenizer = str2token(data);
+		try {
+			code = Integer.parseInt(tokenizer.nextToken());
+		} catch (Exception ex) {
+//			ex.printStackTrace();
+			return -1;
+		}
+		return code;
 	}
 	
 	private String getCurrentRemotePath(boolean hideRealPath) throws Exception {
@@ -151,30 +227,6 @@ public class FTPMainModel {
 		
 		return listFile;
 	};
-	
-	private void write(String cmd) throws Exception {
-		send.write(cmd.getBytes());
-		send.flush();
-		send.write('\n');
-		send.flush();
-	};
-	
-	private String readLine() throws Exception {
-		return recv.readLine();
-	};
-	
-	private OutputStream getSend() throws Exception {
-		return this.sock.getOutputStream();
-	};
-	
-	private BufferedReader getRecv() throws Exception {
-		return new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
-	}
-	
-	private StringTokenizer str2token(String str) {
-		StringTokenizer tokenizer = new StringTokenizer(str);
-		return tokenizer;
-	}
 
 	public boolean mkdirLocal(String folderName) {
 		if (folderName == null || folderName.isEmpty()) {
@@ -218,7 +270,7 @@ public class FTPMainModel {
 		
 		File file = new File(this.localPath + "/" + name);
 		
-		if (file.delete()) {
+		if (file.isDirectory() && deleteDirectory(file)) {
 			return true;
 		}
 		
@@ -232,7 +284,7 @@ public class FTPMainModel {
 		
 		File file = new File(this.localPath + "/" + name);
 		
-		if (file.delete()) {
+		if (file.isFile() && file.delete()) {
 			return true;
 		}
 		
@@ -246,7 +298,7 @@ public class FTPMainModel {
 		
 		String result;
 		int code;
-		write("DELE \"" + name + "\"");
+		write("RMD \"" + name + "\"");
 		
 		result = readLine();
 		code = getStatusCode(result);
@@ -403,18 +455,6 @@ public class FTPMainModel {
 		return false;
 	}
 	
-	private int getStatusCode(String data) {
-		int code;
-		StringTokenizer tokenizer = str2token(data);
-		try {
-			code = Integer.parseInt(tokenizer.nextToken());
-		} catch (Exception ex) {
-//			ex.printStackTrace();
-			return -1;
-		}
-		return code;
-	}
-	
 	private void sendFileToServer(String filePath) throws Exception {
 		FileInputStream fileInputStream = new FileInputStream(filePath);
 		
@@ -490,14 +530,80 @@ public class FTPMainModel {
 
 	}
 
-	public boolean receiveFolder(String fileName) {
-		// TODO Auto-generated method stub
+	public boolean receiveFolder(String folderName) {
+		try {
+			receiveAllFileFromFolder(folderName);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
+		}
 		return false;
 	}
+	
+	private void receiveAllFileFromFolder(String folderName) throws Exception {
+		if (chdirRemote(folderName)) {
+			Map<String, Boolean> listRemote = this.getListRemoteFile();
+			mkdirLocal(folderName);
+			chdirLocal(folderName);
+			
+			for(Map.Entry<String, Boolean> entry: listRemote.entrySet()) {
+				String name = entry.getKey();
+				Boolean isFile = entry.getValue();
+				
+				if (isFile) {
+					receiveFile(name);
+				} else {
+					receiveAllFileFromFolder(name);
+				}
+			}
+			
+			chdirLocal("..");
+			chdirRemote("..");
+		}
+	}
 
-	public boolean sendFolder(String fileName) {
-		// TODO Auto-generated method stub
+	public boolean sendFolder(String folderName) {
+		try {
+			sendAllFileFromFolder(folderName);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
+		}
 		return false;
+	}
+	
+	private void sendAllFileFromFolder(String folderName) throws Exception {
+		try (Stream<Path> paths = Files.list(Paths.get(this.localPath + "/" + folderName)).sorted()) {
+			mkdirRemote(folderName);
+			if (chdirRemote(folderName)) {
+				chdirLocal(folderName);
+				paths.forEach(path -> {
+	            	String name = path.getFileName().toString();
+	            	Boolean isFile = Files.isRegularFile(path);
+	            	if (isFile) {
+	            		try {
+							sendFile(name);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	            	} else {
+	            		try {
+							sendAllFileFromFolder(name);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	            	}
+	            });
+				chdirLocal("..");
+				chdirRemote("..");
+			}
+        } catch (Exception e) {
+        	e.printStackTrace();
+        };
 	}
 
 	public String getLastModifiedTimeFileRemote(String fileName) throws Exception {
@@ -591,5 +697,46 @@ public class FTPMainModel {
         } else {
         	return -1;
         }
+	}
+
+	public Boolean downloadFile(String fileName) {
+		try {
+			write("RETR \"" + fileName + "\"");
+			
+			String result;
+			int code;
+			
+			result = readLine();
+			code = getStatusCode(result);
+			
+			if (code == 150) {
+				receiveFileToServer(this.tmpPath + "/" + fileName);
+				result = readLine();
+				code = getStatusCode(result);
+				
+				if (code != 226) {
+					return false;
+				}
+				
+			} else if (code == 550) {
+				throw new Exception("Cannot download [" + fileName + "] from REMOTE (File not found)");
+			}
+			
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+
+	}
+
+	public void closeRemote() throws Exception {
+		write("QUIT");
+		
+		int code = getStatusCode(readLine());
+		if (code != 221) {
+			throw new Exception("Cannot close REMOTE");
+		}
 	}
 }

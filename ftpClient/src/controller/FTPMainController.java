@@ -2,14 +2,19 @@ package controller;
 
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+
+import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.fxml.Initializable;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -129,7 +134,36 @@ public class FTPMainController implements Initializable {
 	public void run() {
 		reloadLocalList();
 		reloadRemoteList();
+		
+		primaryStage.setOnCloseRequest(event -> {
+            if (!confirmClose()) {
+            	event.consume();
+            }
+        });
 	};
+	
+	private boolean confirmClose() {
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?");
+        alert.setTitle("Confirm Exit");
+        alert.setHeaderText(null);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+				this.ftpMainModel.closeRemote();
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				this.ftpMainView.showMessageError("REMOTE", e.getMessage());
+				return false;
+			}
+        } else {
+        	return false;
+        };
+        
+        return true;
+	}
 	
 	private void getCurrentLocalPath() {
 		this.localPath = this.ftpMainModel.getCurrentLocalPath();
@@ -336,7 +370,37 @@ public class FTPMainController implements Initializable {
 									if (!buttonName.equals("..")) {
 										String typeButton = buttonName.substring(0, 2);
 										if (typeButton.equals("📄")) {
-											this.ftpMainView.showMessageError("REMOTE", "Open file in REMOTE isn't supported at now!");
+											// this.ftpMainView.showMessageError("REMOTE", "Open file in REMOTE isn't supported at now!");
+											this.ftpMainView.writeLog("REMOTE", "DOWNLOADING TO TEMP... [" + name + "]");
+											Task<Boolean> copyTask = new Task<>() {
+											    @Override
+											    protected Boolean call() {
+											        try {
+											        	return ftpMainModel.downloadFile(fileName);
+											        } catch (Exception e) {
+											            updateMessage("Error: " + e.getMessage());
+											            return false;
+											        }
+											    }
+											};
+											
+											copyTask.setOnSucceeded(event -> {
+											    boolean done = copyTask.getValue();
+											    if (done) {
+											    	this.ftpMainView.writeLog("REMOTE", "DOWNLOADED TO TEMP [" + name + "]");
+											    	ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "", this.ftpMainModel.getTmpPath() + "/" + name);
+													try {
+														Process process = processBuilder.start();
+													} catch (Exception e2) {
+														this.ftpMainView.showMessageError("LOCAL", e2.getMessage());
+													}
+											    } else {
+											        ftpMainView.showMessageError("REMOTE", "Cannot download [" + fileName + "] to temp folder");
+											    }
+											});
+
+											// Run the task in a background thread
+											new Thread(copyTask).start();
 											break;
 										}
 									}
@@ -1011,7 +1075,9 @@ public class FTPMainController implements Initializable {
 		});
 		
 		this.menuFileExit.setOnAction(e -> {
-			primaryStage.close();
+			if (confirmClose()) {
+	            primaryStage.close(); // Close the stage if user confirmed
+	        }
 		});
 		
 		// help

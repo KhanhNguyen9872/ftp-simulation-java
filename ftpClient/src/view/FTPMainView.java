@@ -132,32 +132,6 @@ public class FTPMainView {
         return null;
 	}
 	
-	public void showProgressBar(String title, Task<Void> task) {
-		Stage stage = new Stage();
-		// Create a ProgressBar
-        ProgressBar progressBar = new ProgressBar(0); // Initial progress set to 0
-
-        // Label to display progress
-        Label progressLabel = new Label(title);
-
-        // Bind ProgressBar and Label to Task's progress and message
-        progressBar.progressProperty().bind(task.progressProperty());
-        progressLabel.textProperty().bind(task.messageProperty());
-
-        // Run the Task in a separate thread
-        new Thread(task).start();
-
-        // Layout
-        VBox root = new VBox(10, progressLabel, progressBar);
-        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
-
-        // Scene setup
-        Scene scene = new Scene(root, 300, 200);
-        stage.setScene(scene);
-        stage.setTitle("JavaFX ProgressBar Example");
-        stage.show();
-	}
-	
 	public void showProperties(String host, String path, String name, String size, String lastModifiedTime) {
 		Label hostLabel = new Label("Host: " + host);
 		Label pathLabel = new Label("Path: " + path);
