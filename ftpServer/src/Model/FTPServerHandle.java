@@ -1,5 +1,6 @@
 package Model;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,24 +15,21 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 
 class FTPClientHandler implements Runnable {
+    private byte[] eof = ByteBuffer.allocate(4).putInt(0xCAFEBABE).array();
     private int isLoggedIn = -1;
     private String Rnfr = null;
-    private ServerSocket dataSocket;
     private Socket clientSocket;
-    private Integer dataPort;
     private String username;
     private String password;
     private String rootPath;
     private String curPath;
     private BufferedReader in;
     private PrintWriter out;
-    private String transferMode = "A";
 
-    public FTPClientHandler(Socket clientSocket, Integer dataPort, String username, String password, String rootPath) throws IOException {
+    public FTPClientHandler(Socket clientSocket, String username, String password, String rootPath) throws IOException {
         this.clientSocket = clientSocket;
         this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         this.out = new PrintWriter(clientSocket.getOutputStream(), true);
-        this.dataPort = dataPort;
         this.username = username;
         this.password = password;
         this.rootPath = rootPath;
@@ -57,45 +55,6 @@ class FTPClientHandler implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
-
-    private Map<String, Boolean> nlstHelper(String args) {
-        // Construct the name of the directory to list.
-        String filename = this.curPath;
-        if (args != null) {
-          filename = filename + "\\" + args;
-        }
-    
-        // Now get a File object, and see if the name we got exists and is a
-        // directory.
-        File f = new File(filename);
-        Map<String, Boolean> listFile = new LinkedHashMap<>(); 
-    
-        if (f.exists()) {
-            if (f.isDirectory()) {
-                List<String> arrayList = Arrays.asList(f.list());
-                Collections.sort(arrayList, new Comparator<String>() {
-                    @Override
-                    public int compare(String s1, String s2) {
-                        // Compare the first character of each string
-                        return Character.compare(s1.charAt(0), s2.charAt(0));
-                    }
-                });
-
-                for (String string: arrayList) {
-                    File currentFile = new File(f, string);
-                    listFile.put(string, currentFile.isFile());
-                }
-            } 
-
-            if (f.isFile()) {
-                listFile.put(f.getName(), true);
-            }
-        } else {
-            listFile = null;
-        }
-
-        return listFile;
     }
 
     private void handleCommand(String command) {
@@ -145,16 +104,10 @@ class FTPClientHandler implements Runnable {
                 handleList(args);
                 break;
             case "RETR":
-                handleRetrieve(tokenizer);
+                handleRetr(tokenizer);
                 break;
             case "STOR":
-                handleStore(tokenizer);
-                break;
-            case "SYST":
-                handleSyst();
-                break;
-            case "FEAT":
-                handleFeat();
+                handleStor(tokenizer);
                 break;
             case "CWD":
                 handleCwd(tokenizer);
@@ -163,18 +116,97 @@ class FTPClientHandler implements Runnable {
             case "XPWD":
                 handlePwd();
                 break;
+            case "SIZE":
+                handleSize(tokenizer);
+                break;
+            case "MDTM":
+                handleMdtm(tokenizer);
+                break;
             case "QUIT":
                 handleQuit();
-                break;
-            case "TYPE":
-                handleType(tokenizer);
-                break;
-            case "PASV":
-                handlePasv();
                 break;
             default:
                 sendResponse("502 Command not implemented");
         }
+    }
+
+    private void handleSize(StringTokenizer tokenizer) {
+        String fileName = tokenizer.nextToken();
+
+        if (fileName == null || fileName.isEmpty()) {
+            sendResponse("500 Syntax error.");
+            return;
+        }
+
+        fileName = getName(fileName);
+
+        File file = new File(this.curPath + "/" + fileName);
+        
+        if (file.exists() && file.isFile()) {
+            long fileSizeInBytes = file.length();
+            sendResponse("213 " + fileSizeInBytes);
+        } else {
+            sendResponse("550 No such file or directory.");
+        }
+    }
+
+    private void handleMdtm(StringTokenizer tokenizer) {
+        String fileName = tokenizer.nextToken();
+
+        if (fileName == null || fileName.isEmpty()) {
+            sendResponse("500 Syntax error.");
+            return;
+        }
+
+        fileName = getName(fileName);
+
+        File file = new File(this.curPath + "/" + fileName);
+        
+        if (file.exists()) {
+            long lastModifiedMillis = file.lastModified();
+            sendResponse("213 " + lastModifiedMillis);
+        } else {
+            sendResponse("550 No such file or directory.");
+        }
+    }
+
+    private Map<String, Boolean> nlstHelper(String args) {
+        // Construct the name of the directory to list.
+        String filename = this.curPath;
+        if (args != null) {
+          filename = filename + "\\" + args;
+        }
+    
+        // Now get a File object, and see if the name we got exists and is a
+        // directory.
+        File f = new File(filename);
+        Map<String, Boolean> listFile = new LinkedHashMap<>(); 
+    
+        if (f.exists()) {
+            if (f.isDirectory()) {
+                List<String> arrayList = Arrays.asList(f.list());
+                Collections.sort(arrayList, new Comparator<String>() {
+                    @Override
+                    public int compare(String s1, String s2) {
+                        // Compare the first character of each string
+                        return Character.compare(s1.charAt(0), s2.charAt(0));
+                    }
+                });
+
+                for (String string: arrayList) {
+                    File currentFile = new File(f, string);
+                    listFile.put(string, currentFile.isFile());
+                }
+            } 
+
+            if (f.isFile()) {
+                listFile.put(f.getName(), true);
+            }
+        } else {
+            listFile = null;
+        }
+
+        return listFile;
     }
 
     private void handleRnfr(StringTokenizer tokenizer) {
@@ -290,21 +322,6 @@ class FTPClientHandler implements Runnable {
 
         String newPath = realPath.toString();
     
-        // // cd ..
-        // if (args.equals("..")) {
-        //     int ind = filename.lastIndexOf(fileSeparator);
-        //     if (ind > 0) {
-        //         filename = filename.substring(0, ind);
-        //     }
-        // }
-    
-        // // if argument is anything else (cd . does nothing)
-        // else if ((args != null) && (!args.equals("."))) {
-        //   filename = filename + "/" + args;
-        // }
-    
-        // check if file exists, is directory and is not above root directory
-
         File f = new File(newPath);
     
         if (f.exists() && f.isDirectory() && (newPath.length() >= this.rootPath.length())) {
@@ -316,61 +333,15 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private void openDataConnectionPassive(int port) {
-        int tried = 0;
-        while (tried < 10) {
-            try {
-                this.dataSocket = new ServerSocket(port);
-                this.clientSocket = this.dataSocket.accept();
-                this.out = new PrintWriter(this.clientSocket.getOutputStream(), true);
-                System.out.println("Data connection - Passive Mode - established");
-        
-            } catch (IOException e) {
-                port = port + 1;
-                this.dataPort = port;
-                tried = tried + 1;
-            }
-        }
-      }
-
-    private void handlePasv() {
-        String myIp = "127.0.0.1";
-        String myIpSplit[] = myIp.split("\\.");
-
-        int p1 = this.dataPort / 256;
-        int p2 = this.dataPort % 256;
-
-        sendResponse("227 Entering Passive Mode (" + myIpSplit[0] + "," + myIpSplit[1] + "," + myIpSplit[2] + ","
-            + myIpSplit[3] + "," + p1 + "," + p2 + ")");
-
-        openDataConnectionPassive(this.dataPort);
-    }
-
-    private void handleFeat() {
-        sendResponse("211-Extensions supported:");
-        sendResponse("211 END");
-    }
-
-    private void handleType(StringTokenizer tokenizer) {
-        String mode = tokenizer.nextToken().toUpperCase();
-
-        if (mode.toUpperCase().equals("A")) {
-            this.transferMode = "A";
-            sendResponse("200 OK");
-        } else if (mode.toUpperCase().equals("I")) {
-            this.transferMode = "I";
-            sendResponse("200 OK");
-        } else {
-            sendResponse("504 Not OK");
-        };
-    }
-
     private void handleQuit() {
         sendResponse("221 Closing connection");
-    }
+        try {
+            this.clientSocket.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
 
-    private void handleSyst() {
-        sendResponse("215 COMP4621 FTP Server Homebrew");
     }
     
     private void handlePwd() {
@@ -422,18 +393,119 @@ class FTPClientHandler implements Runnable {
 
     }
 
-    private void handleRetrieve(StringTokenizer tokenizer) {
-        String filename = tokenizer.nextToken();
-        System.out.println("Retrieving file: " + filename);
-        sendResponse("150 Opening data connection for file transfer");
-        sendResponse("226 Transfer complete");
+    private void handleRetr(StringTokenizer tokenizer) {
+        String fileName = tokenizer.nextToken();
+
+        if (fileName == null || fileName.isEmpty()) {
+            sendResponse("500 Syntax error.");
+            return;
+        }
+
+        fileName = getName(fileName);
+		
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(this.curPath + "/" + fileName);
+            sendResponse("150 File status okay.");
+        } catch (Exception e) {
+            sendResponse("550 File unavailable.");
+            return;
+        }
+		
+		byte[] buffer = new byte[65536];
+        int bytesRead;
+
+        OutputStream outputStream = null;
+        
+        try {
+            outputStream = this.clientSocket.getOutputStream();
+
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                outputStream.flush();
+            }
+            
+            outputStream.write(eof);
+            outputStream.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        try {
+            fileInputStream.close();
+        } catch (Exception e) {
+
+        }
+
+        String line;
+        try {
+            line = in.readLine();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+        sendResponse("226 Closing data connection.");
     }
 
-    private void handleStore(StringTokenizer tokenizer) {
-        String filename = tokenizer.nextToken();
-        System.out.println("Storing file: " + filename);
-        sendResponse("150 Opening data connection for file upload");
-        sendResponse("226 Transfer complete");
+    private void handleStor(StringTokenizer tokenizer) {
+        String fileName = tokenizer.nextToken();
+
+        if (fileName == null || fileName.isEmpty()) {
+            sendResponse("500 Syntax error.");
+            return;
+        }
+
+        fileName = getName(fileName);
+        String pathFile = this.curPath + "/" + fileName;
+
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream(pathFile, false);
+            sendResponse("150 File status okay.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse("553 Requested action not taken.");
+            try {
+                fileOutputStream.close();
+            } catch (Exception ex) {
+                // TODO: handle exception
+            }
+            
+            return;
+        }
+
+        byte[] buffer = new byte[65536];
+        int bytesRead;
+
+        InputStream inputStream;
+        try {
+            inputStream = this.clientSocket.getInputStream();
+            
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                if (bytesRead >= 4 && 
+                    buffer[bytesRead - 4] == eof[0] &&
+                    buffer[bytesRead - 3] == eof[1] &&
+                    buffer[bytesRead - 2] == eof[2] &&
+                    buffer[bytesRead - 1] == eof[3]) {
+
+                    fileOutputStream.write(buffer, 0, bytesRead - 4);
+                    break;
+                } else {
+                    fileOutputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            
+        }        
+
+        try {
+            fileOutputStream.close();
+        } catch (Exception e) {
+            
+        }
+
+        sendResponse("226 Closing data connection.");
     }
 
     private void sendResponse(String response) {

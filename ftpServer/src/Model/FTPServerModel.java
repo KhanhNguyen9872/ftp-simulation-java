@@ -19,16 +19,14 @@ public class FTPServerModel {
         this.serverSocket = new ServerSocket(this.port);
         Socket clientSocket;
         FTPClientHandler clientHandler;
-        int thread = 0;
         
         System.out.println("FTPServer started on port: " + this.serverSocket.getLocalPort());
         
         while (true) {
             clientSocket = serverSocket.accept();
-            System.out.println("Client connected: " + clientSocket.getInetAddress());
+            System.out.println("Client connected: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
 
-            clientHandler = new FTPClientHandler(clientSocket, port + thread + 1, username, password, path);
-            thread = thread + 1;
+            clientHandler = new FTPClientHandler(clientSocket, username, password, path);
             new Thread(clientHandler).start();
         }
     }

@@ -38,12 +38,14 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FTPMainController">
+<VBox prefHeight="530.0" prefWidth="753.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FTPMainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -60,11 +62,11 @@
         </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="413.0" prefWidth="640.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="492.0" prefWidth="733.0" VBox.vgrow="ALWAYS">
          <children>
-            <VBox fx:id="vboxLocal" layoutX="14.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
-            <VBox fx:id="vboxRemote" layoutX="361.0" layoutY="14.0" prefHeight="348.0" prefWidth="265.0" />
-            <VBox fx:id="vboxLocalToolBox" layoutX="279.0" layoutY="14.0" prefHeight="348.0" prefWidth="42.0" style="-fx-border-color: black;">
+            <VBox fx:id="vboxLocal" layoutX="14.0" layoutY="58.0" prefHeight="330.0" prefWidth="317.0" />
+            <VBox fx:id="vboxRemote" layoutX="419.0" layoutY="58.0" prefHeight="330.0" prefWidth="317.0" />
+            <VBox fx:id="vboxLocalToolBox" layoutX="329.0" layoutY="58.0" prefHeight="330.0" prefWidth="43.0" style="-fx-border-color: black;">
                <children>
                   <ImageView fx:id="reloadLocalImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -102,9 +104,9 @@
                      </image>
                   </ImageView>
                </children></VBox>
-            <VBox fx:id="vboxRemoteToolBox" layoutX="320.0" layoutY="14.0" prefHeight="348.0" prefWidth="41.0" style="-fx-border-color: black;">
+            <VBox fx:id="vboxRemoteToolBox" layoutX="377.0" layoutY="58.0" prefHeight="330.0" prefWidth="43.0" style="-fx-border-color: black;">
                <children>
-                  <ImageView fx:id="reloadRemoteImg" fitHeight="39.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="reloadRemoteImg" fitHeight="39.0" fitWidth="39.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../resources/img/reload.png" />
                      </image>
@@ -140,13 +142,28 @@
                      </image>
                   </ImageView>
                </children></VBox>
-            <TextArea editable="false" layoutX="7.0" layoutY="372.0" prefHeight="67.0" prefWidth="622.0" text="Log here">
+            <TextArea fx:id="textAreaLog" editable="false" layoutX="11.0" layoutY="418.0" prefHeight="94.0" prefWidth="731.0" text="Log here">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
             </TextArea>
+            <TextField fx:id="textFieldLocalPath" editable="false" layoutX="14.0" layoutY="35.0" prefHeight="23.0" prefWidth="356.0" />
+            <Label layoutX="18.0" layoutY="14.0" text="LOCAL">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font></Label>
+            <TextField fx:id="textFieldRemotePath" editable="false" layoutX="376.0" layoutY="35.0" prefHeight="23.0" prefWidth="363.0" />
+            <Label layoutX="683.0" layoutY="14.0" text="REMOTE">
+               <font>
+                  <Font size="14.0" />
+               </font></Label>
+            <Label layoutX="18.0" layoutY="394.0" text="Log">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
          </children>
     </AnchorPane>
-      <Label prefHeight="15.0" prefWidth="640.0" />
+      <Label prefHeight="15.0" prefWidth="755.0" />
   </children>
 </VBox>

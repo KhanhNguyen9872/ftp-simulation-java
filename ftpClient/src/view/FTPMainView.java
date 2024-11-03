@@ -5,29 +5,76 @@ import java.util.Optional;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
-
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
 
 public class FTPMainView {
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	private TextArea textAreaLog;
 	
 	public FTPMainView() {
 		
 	}
 	
-	public void showMessage(String title, String msg) {
-		Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle(title);
+	public void setTextAreaLog(TextArea textAreaLog) {
+		this.textAreaLog = textAreaLog;
+		this.textAreaLog.setText("");
+	}
+	
+	private void writeLog(String text) {
+		new Thread(() -> {
+			this.textAreaLog.setText(this.textAreaLog.getText() + text + "\n");
+			this.textAreaLog.setScrollTop(Double.MAX_VALUE);
+		}).start();
+	}
+	
+	public void writeLog(String head, String text) {
+		writeLog("[" + getCurrentDateTime() + "]" + (!head.isEmpty() ? " " + head + ": " : " ") + text);
+	}
+	
+	private String getCurrentDateTime() {
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+        return currentDateTime.format(formatter);
+	}
+	
+	public void showMessageError(String msg) {
+		this.showMessageError("", msg);
+	}
+	
+	public void showMessageError(String head, String msg) {
+		writeLog("[" + getCurrentDateTime() + "]" + (!head.isEmpty() ? " " + head + ": " : " ") + "ERROR: " + msg);
+		Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("ERROR" + (!head.isEmpty() ? " (" + head + ")" : ""));
         alert.setHeaderText(null); 
         alert.setContentText(msg);
-
         alert.showAndWait();
+		
 	}
 	
 	public void showMessage(String msg) {
-		this.showMessage("MESSAGE", msg);
+		this.showMessage("", msg);
+	}
+	
+	public void showMessage(String head, String msg) {
+		writeLog("[" + getCurrentDateTime() + "]" + (!head.isEmpty() ? " " + head + ": " : " ") + "MESSAGE: " + msg);
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("MESSAGE" + (!head.isEmpty() ? " (" + head + ")" : ""));
+        alert.setHeaderText(null); 
+        alert.setContentText(msg);
+        alert.showAndWait();
 	}
 	
 	public boolean askYesOrNo(String title, String header, String content) {
@@ -83,6 +130,60 @@ public class FTPMainView {
         }
         
         return null;
+	}
+	
+	public void showProgressBar(String title, Task<Void> task) {
+		Stage stage = new Stage();
+		// Create a ProgressBar
+        ProgressBar progressBar = new ProgressBar(0); // Initial progress set to 0
+
+        // Label to display progress
+        Label progressLabel = new Label(title);
+
+        // Bind ProgressBar and Label to Task's progress and message
+        progressBar.progressProperty().bind(task.progressProperty());
+        progressLabel.textProperty().bind(task.messageProperty());
+
+        // Run the Task in a separate thread
+        new Thread(task).start();
+
+        // Layout
+        VBox root = new VBox(10, progressLabel, progressBar);
+        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        // Scene setup
+        Scene scene = new Scene(root, 300, 200);
+        stage.setScene(scene);
+        stage.setTitle("JavaFX ProgressBar Example");
+        stage.show();
+	}
+	
+	public void showProperties(String host, String path, String name, String size, String lastModifiedTime) {
+		Label hostLabel = new Label("Host: " + host);
+		Label pathLabel = new Label("Path: " + path);
+        Label nameLabel = new Label("Name: " + name);
+        Label sizeLabel = null;
+        if (size != null) {
+        	sizeLabel = new Label("Size: " + size);
+        }
+        Label lastModifiedLabel = new Label("Last Modified Time: " + lastModifiedTime);
+
+        // Layout for the labels
+        VBox vbox = new VBox(10);
+        vbox.getChildren().add(hostLabel);
+        vbox.getChildren().add(pathLabel);
+        vbox.getChildren().add(nameLabel);
+        if (sizeLabel != null) {
+        	vbox.getChildren().add(sizeLabel);
+        }
+        vbox.getChildren().add(lastModifiedLabel);
+        vbox.setStyle("-fx-padding: 10;");
+        
+		Stage detailsStage = new Stage();
+        detailsStage.setTitle("Properties");
+        detailsStage.setScene(new Scene(vbox));
+        detailsStage.setResizable(false);
+        detailsStage.show();
 	}
 
 }
