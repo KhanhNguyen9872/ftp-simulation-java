@@ -320,7 +320,7 @@ public class FTPMainModel {
 		String result;
 		int code;
 		
-		write("RMD \"" + name + "\"");
+		write("DELE \"" + name + "\"");
 		
 		result = readLine();
 		code = getStatusCode(result);
