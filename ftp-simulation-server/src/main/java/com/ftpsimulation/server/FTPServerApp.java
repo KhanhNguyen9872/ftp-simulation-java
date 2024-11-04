@@ -1,7 +1,6 @@
 package com.ftpsimulation.server;
 
 import com.ftpsimulation.server.controller.FTPServerController;
-import com.ftpsimulation.server.model.FTPServerDatabase;
 import com.ftpsimulation.server.model.FTPServerModel;
 import com.ftpsimulation.server.view.FTPServerUI;
 

@@ -1,8 +1,6 @@
 package com.ftpsimulation.server.model;
 
-import java.io.*;
 import java.net.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FTPServerModel {
@@ -12,7 +10,7 @@ public class FTPServerModel {
     private int portSQL = 3306;
     private String databaseSQL = "ftpSimulation";
     private String usernameSQL = "root";
-    private String passwordSQL = "12345678";
+    private String passwordSQL = "khanhnguyen";
 
     private ServerSocket serverSocket;
     
@@ -20,24 +18,24 @@ public class FTPServerModel {
         
     }
 
-    private void prepareSettings() {
+    private void prepareSettings() throws Exception {
         System.out.println("Reading settings....");
         FTPServerDatabase ftpServerDatabase = new FTPServerDatabase(ipAddressSQL, portSQL, databaseSQL, usernameSQL, passwordSQL);
         this.port = ftpServerDatabase.getPortServer();
         this.path = ftpServerDatabase.getPathServer();
 
-        try {
-            this.path = Paths.get(this.path).normalize().toRealPath().toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO: handle exception
-        }
+        this.path = Paths.get(this.path).normalize().toRealPath().toString();
     }
 
-    public void start() throws IOException {
+    public void start() throws Exception {
         prepareSettings();
 
-        this.serverSocket = new ServerSocket(this.port);
+        try {
+            this.serverSocket = new ServerSocket(this.port);
+        } catch (Exception e) {
+            return;
+        }
+        
         Socket clientSocket;
         FTPClientHandler clientHandler;
         
@@ -50,18 +48,5 @@ public class FTPServerModel {
             clientHandler = new FTPClientHandler(clientSocket, path, new FTPServerDatabase(ipAddressSQL, portSQL, databaseSQL, usernameSQL, passwordSQL));
             new Thread(clientHandler).start();
         }
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setPath(String path) {
-        try {
-            this.path = Paths.get(path).normalize().toRealPath().toString();
-        } catch (Exception e) {
-            System.err.println("NOT FOUND: " + this.path);
-        }
-        
     }
 }

@@ -156,7 +156,6 @@ public class FTPMainController implements Initializable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				this.ftpMainView.showMessageError("REMOTE", e.getMessage());
-				return false;
 			}
         } else {
         	return false;

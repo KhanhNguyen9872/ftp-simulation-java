@@ -68,14 +68,6 @@ class FTPClientHandler implements Runnable {
     private void handleCommand(String command) {
         StringTokenizer tokenizer = new StringTokenizer(command);
         String cmd = tokenizer.nextToken().toUpperCase();
-        String args = "";
-
-        String[] tmp = command.split(" ");
-        for (int i = 1; i < tmp.length; i++) {
-            args = args + tmp[i] + " ";
-        };
-
-        args = args.trim();
 
         switch (cmd) {
             case "USER":
@@ -109,7 +101,7 @@ class FTPClientHandler implements Runnable {
                 break;
             case "LIST":
             case "NIST":
-                handleList(args);
+                handleList();
                 break;
             case "RETR":
                 handleRetr(tokenizer);
@@ -184,12 +176,9 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private Map<String, Boolean> nlstHelper(String args) {
+    private Map<String, Boolean> nlstHelper() {
         // Construct the name of the directory to list.
         String filename = this.curPath;
-        if (args != null) {
-          filename = filename + "\\" + args;
-        }
     
         // Now get a File object, and see if the name we got exists and is a
         // directory.
@@ -408,8 +397,8 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private void handleList(String args) {
-        Map<String, Boolean> dirContent = nlstHelper(args);
+    private void handleList() {
+        Map<String, Boolean> dirContent = nlstHelper();
 
         if (dirContent == null) {
             sendResponse("550 File does not exist.");
