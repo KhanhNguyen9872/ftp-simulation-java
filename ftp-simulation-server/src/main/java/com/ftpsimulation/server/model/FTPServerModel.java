@@ -4,13 +4,13 @@ import java.net.*;
 import java.nio.file.Paths;
 
 public class FTPServerModel {
-    private int port = 21;
+    private int port;
     private String path;
     private String ipAddressSQL = "127.0.0.1";
     private int portSQL = 3306;
     private String databaseSQL = "ftpSimulation";
     private String usernameSQL = "root";
-    private String passwordSQL = "khanhnguyen";
+    private String passwordSQL = "12345678";
 
     private ServerSocket serverSocket;
     
