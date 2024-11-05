@@ -66,15 +66,15 @@ class FTPClientHandler implements Runnable {
     }
 
     private void handleCommand(String command) {
-        StringTokenizer tokenizer = new StringTokenizer(command);
-        String cmd = tokenizer.nextToken().toUpperCase();
+        CommandSplit commandSplit = new CommandSplit(command);
+        String cmd = commandSplit.nextCommand().toUpperCase();
 
         switch (cmd) {
             case "USER":
-                handleUser(tokenizer);
+                handleUser(commandSplit);
                 return;
             case "PASS":
-                handlePass(tokenizer);
+                handlePass(commandSplit);
                 return;
         }
 
@@ -85,42 +85,42 @@ class FTPClientHandler implements Runnable {
 
         switch (cmd) {
             case "MKD":
-                handleMkd(tokenizer);
+                handleMkd(commandSplit);
                 break;
             case "DELE":
-                handleDele(tokenizer);
+                handleDele(commandSplit);
                 break;
             case "RMD":
-                handleRmd(tokenizer);
+                handleRmd(commandSplit);
                 break;
             case "RNFR":
-                handleRnfr(tokenizer);
+                handleRnfr(commandSplit);
                 break;
             case "RNTO":
-                handleRnto(tokenizer);
+                handleRnto(commandSplit);
                 break;
             case "LIST":
             case "NIST":
                 handleList();
                 break;
             case "RETR":
-                handleRetr(tokenizer);
+                handleRetr(commandSplit);
                 break;
             case "STOR":
-                handleStor(tokenizer);
+                handleStor(commandSplit);
                 break;
             case "CWD":
-                handleCwd(tokenizer);
+                handleCwd(commandSplit);
                 break;
             case "PWD":
             case "XPWD":
                 handlePwd();
                 break;
             case "SIZE":
-                handleSize(tokenizer);
+                handleSize(commandSplit);
                 break;
             case "MDTM":
-                handleMdtm(tokenizer);
+                handleMdtm(commandSplit);
                 break;
             case "QUIT":
                 handleQuit();
@@ -136,15 +136,13 @@ class FTPClientHandler implements Runnable {
         return currentDateTime.format(formatter);
 	}
 
-    private void handleSize(StringTokenizer tokenizer) {
-        String fileName = tokenizer.nextToken();
+    private void handleSize(CommandSplit commandSplit) {
+        String fileName = commandSplit.nextCommand();
 
         if (fileName == null || fileName.isEmpty()) {
             sendResponse("500 Syntax error.");
             return;
         }
-
-        fileName = getName(fileName);
 
         File file = new File(this.curPath + "/" + fileName);
         
@@ -156,15 +154,13 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private void handleMdtm(StringTokenizer tokenizer) {
-        String fileName = tokenizer.nextToken();
+    private void handleMdtm(CommandSplit commandSplit) {
+        String fileName = commandSplit.nextCommand();
 
         if (fileName == null || fileName.isEmpty()) {
             sendResponse("500 Syntax error.");
             return;
         }
-
-        fileName = getName(fileName);
 
         File file = new File(this.curPath + "/" + fileName);
         
@@ -212,24 +208,22 @@ class FTPClientHandler implements Runnable {
         return listFile;
     }
 
-    private void handleRnfr(StringTokenizer tokenizer) {
-        String fromName = tokenizer.nextToken();
+    private void handleRnfr(CommandSplit commandSplit) {
+        String fromName = commandSplit.nextCommand();
         if (fromName == null || fromName.isEmpty()) {
             return;
         }
 
-        this.Rnfr = getName(fromName);
+        this.Rnfr = fromName;
     }
 
-    private void handleRnto(StringTokenizer tokenizer) {
-        String toName = tokenizer.nextToken();
+    private void handleRnto(CommandSplit commandSplit) {
+        String toName = commandSplit.nextCommand();
 
         if (toName == null || toName.isEmpty() || this.Rnfr == null) {
             sendResponse("501 Syntax error in parameters or arguments.");
             return;
         }
-
-        toName = getName(toName);
 
         // Specify the old file/folder path and the new name
         Path oldPath = Paths.get(this.curPath + "/" + this.Rnfr);
@@ -244,18 +238,12 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private String getName(String name) {
-        return name.substring(1, name.length() - 1);
-    }
-
-    private void handleRmd(StringTokenizer tokenizer) {
-        String folderName = tokenizer.nextToken();
+    private void handleRmd(CommandSplit commandSplit) {
+        String folderName = commandSplit.nextCommand();
 
         if (folderName == null || folderName.isEmpty()) {
             sendResponse("550 Empty name");
         }
-
-        folderName = folderName.substring(1, folderName.length() - 1);
 
         File directory = new File(this.curPath + "/" + folderName);
 
@@ -266,14 +254,12 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private void handleDele(StringTokenizer tokenizer) {
-        String fileName = tokenizer.nextToken();
+    private void handleDele(CommandSplit commandSplit) {
+        String fileName = commandSplit.nextCommand();
 
         if (fileName == null || fileName.isEmpty()) {
             sendResponse("550 Error");
         }
-
-        fileName = fileName.substring(1, fileName.length() - 1);
 
         File file = new File(this.curPath + "/" + fileName);
 
@@ -305,14 +291,12 @@ class FTPClientHandler implements Runnable {
         return dir.delete();
     }
 
-    private void handleMkd(StringTokenizer tokenizer) {
-        String folderName = tokenizer.nextToken();
+    private void handleMkd(CommandSplit commandSplit) {
+        String folderName = commandSplit.nextCommand();
 
         if (folderName == null || folderName.isEmpty()) {
             sendResponse("550 Empty name");
         }
-
-        folderName = folderName.substring(1, folderName.length() - 1);
 
         File directory = new File(this.curPath + "/" + folderName);
 
@@ -323,8 +307,8 @@ class FTPClientHandler implements Runnable {
         }
     }
 
-    private void handleCwd(StringTokenizer tokenizer) {
-        String filename = tokenizer.nextToken();
+    private void handleCwd(CommandSplit commandSplit) {
+        String filename = commandSplit.nextCommand();
 
         if (filename == null || filename.isEmpty()) {
             sendResponse("500 Syntax error, command unrecognized.");
@@ -332,7 +316,7 @@ class FTPClientHandler implements Runnable {
         }
 
         
-        Path path = Paths.get(this.curPath + "/" + getName(filename));
+        Path path = Paths.get(this.curPath + "/" + filename);
         Path realPath;
 
         try {
@@ -371,8 +355,8 @@ class FTPClientHandler implements Runnable {
         sendResponse("257 \"" + this.curPath + "\"");
     }
 
-    private void handleUser(StringTokenizer tokenizer) {
-        String username = tokenizer.nextToken();
+    private void handleUser(CommandSplit commandSplit) {
+        String username = commandSplit.nextCommand();
         if (this.ftpServerDatabase.checkUsername(username)) {
             this.username = username;
             this.isLoggedIn = 0;
@@ -383,8 +367,8 @@ class FTPClientHandler implements Runnable {
         };
     }
 
-    private void handlePass(StringTokenizer tokenizer) {
-        String password = tokenizer.nextToken();
+    private void handlePass(CommandSplit commandSplit) {
+        String password = commandSplit.nextCommand();
         if (this.ftpServerDatabase.checkPassword(this.username, password)) {
             if (this.isLoggedIn != 0) {
                 sendResponse("530 Missing username");
@@ -417,15 +401,13 @@ class FTPClientHandler implements Runnable {
 
     }
 
-    private void handleRetr(StringTokenizer tokenizer) {
-        String fileName = tokenizer.nextToken();
+    private void handleRetr(CommandSplit commandSplit) {
+        String fileName = commandSplit.nextCommand();
 
         if (fileName == null || fileName.isEmpty()) {
             sendResponse("500 Syntax error.");
             return;
         }
-
-        fileName = getName(fileName);
 		
         FileInputStream fileInputStream = null;
         try {
@@ -471,15 +453,14 @@ class FTPClientHandler implements Runnable {
         sendResponse("226 Closing data connection.");
     }
 
-    private void handleStor(StringTokenizer tokenizer) {
-        String fileName = tokenizer.nextToken();
+    private void handleStor(CommandSplit commandSplit) {
+        String fileName = commandSplit.nextCommand();
 
         if (fileName == null || fileName.isEmpty()) {
             sendResponse("500 Syntax error.");
             return;
         }
 
-        fileName = getName(fileName);
         String pathFile = this.curPath + "/" + fileName;
 
         FileOutputStream fileOutputStream = null;

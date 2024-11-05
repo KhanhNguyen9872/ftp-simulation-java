@@ -3,7 +3,6 @@ package controller;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Map;
@@ -1044,7 +1043,7 @@ public class FTPMainController implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		this.ftpMainView = new FTPMainView();
-		this.ftpMainModel = new FTPMainModel("D:\\");
+		this.ftpMainModel = new FTPMainModel(System.getProperty("user.home"));
 		
 		this.fileLocalListView = new ListView<>();
 		this.fileRemoteListView = new ListView<>();

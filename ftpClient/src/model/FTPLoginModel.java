@@ -34,8 +34,9 @@ public class FTPLoginModel {
 	}
 	
 	private void ready(Socket socket) throws Exception {
-		StringTokenizer tokenizer = new StringTokenizer(readLine());
-		String code = tokenizer.nextToken();
+		String result = readLine();
+		CommandSplit commandSplit = new CommandSplit(result);
+		String code = commandSplit.nextCommand();
 		
 		System.out.println();
 		
@@ -47,14 +48,13 @@ public class FTPLoginModel {
 	private void auth(Socket socket, String username, String password) throws Exception {
 		String code;
 		String result;
-		StringTokenizer tokenizer;
-		
+		CommandSplit commandSplit;
 		
 		// username
 		write("USER " + username);
 		result = readLine();
-		tokenizer = new StringTokenizer(result);
-		code = tokenizer.nextToken();
+		commandSplit = new CommandSplit(result);
+		code = commandSplit.nextCommand();
 		
 		if (!code.equals("331")) {
 			throw new Exception(result);
@@ -63,8 +63,8 @@ public class FTPLoginModel {
 		// password
 		write("PASS " + password);
 		result = readLine();
-		tokenizer = new StringTokenizer(result);
-		code = tokenizer.nextToken();
+		commandSplit = new CommandSplit(result);
+		code = commandSplit.nextCommand();
 		
 		if (!code.equals("230")) {
 			throw new Exception(result);
@@ -81,10 +81,6 @@ public class FTPLoginModel {
 	private String readLine() throws Exception {
 		return this.recv.readLine();
 	};
-	
-//	private byte readByte() {
-//		this.recv.rea
-//	}
 	
 	private OutputStream getSend(Socket sock) throws Exception {
 		return sock.getOutputStream();

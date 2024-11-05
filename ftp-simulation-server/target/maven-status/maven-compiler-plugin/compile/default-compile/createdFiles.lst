@@ -1,3 +1,8 @@
+com\ftpsimulation\server\controller\FTPServerController.class
+com\ftpsimulation\server\model\FTPClientHandler$1.class
 com\ftpsimulation\server\view\FTPServerUI.class
 com\ftpsimulation\server\model\FTPServerModel.class
+com\ftpsimulation\server\FTPServerApp.class
+com\ftpsimulation\server\model\CommandSplit.class
 com\ftpsimulation\server\model\FTPServerDatabase.class
+com\ftpsimulation\server\model\FTPClientHandler.class

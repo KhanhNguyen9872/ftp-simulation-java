@@ -99,9 +99,9 @@ public class FTPMainModel {
 		return new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
 	}
 	
-	private StringTokenizer str2token(String str) {
-		StringTokenizer tokenizer = new StringTokenizer(str);
-		return tokenizer;
+	private CommandSplit str2command(String str) {
+		CommandSplit cmd = new CommandSplit(str);
+		return cmd;
 	}
 	
 	private boolean deleteDirectory(File dir) {
@@ -126,9 +126,9 @@ public class FTPMainModel {
 	
 	private int getStatusCode(String data) {
 		int code;
-		StringTokenizer tokenizer = str2token(data);
+		CommandSplit commandSplit = str2command(data);
 		try {
-			code = Integer.parseInt(tokenizer.nextToken());
+			code = Integer.parseInt(commandSplit.nextCommand());
 		} catch (Exception ex) {
 //			ex.printStackTrace();
 			return -1;
@@ -140,15 +140,15 @@ public class FTPMainModel {
 		write("PWD");
 		
 		String str = readLine();
-		StringTokenizer tokenizer = str2token(str);
-		String code = tokenizer.nextToken();
+		CommandSplit commandSplit = str2command(str);
+		String code = commandSplit.nextCommand();
 		
 		if (code.equals("257")) {
-			String path = tokenizer.nextToken();
+			String path = commandSplit.nextCommand();
 			if (path == null || path.isEmpty()) {
 				throw new Exception("Path is null or empty!");
 			}
-			this.remotePath = path.substring(1, path.length() - 1);
+			this.remotePath = path;
 		} else {
 			throw new Exception(str);
 		}
@@ -632,11 +632,11 @@ public class FTPMainModel {
 		int code;
 		
 		result = readLine();
-		StringTokenizer tokenizer = new StringTokenizer(result);
-		code = Integer.parseInt(tokenizer.nextToken());
+		CommandSplit commandSplit = new CommandSplit(result);
+		code = Integer.parseInt(commandSplit.nextCommand());
 		
 		if (code == 213) {
-			return tokenizer.nextToken();
+			return commandSplit.nextCommand();
 		} else if (code == 550) {
 			throw new Exception("File or folder not found");
 		}

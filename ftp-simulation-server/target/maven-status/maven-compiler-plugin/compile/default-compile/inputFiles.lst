@@ -1,6 +1,7 @@
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\FTPServerApp.java
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\controller\FTPServerController.java
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPServerDatabase.java
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPClientHandler.java
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPServerModel.java
-C:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\view\FTPServerUI.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\FTPServerApp.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\controller\FTPServerController.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPServerDatabase.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPClientHandler.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\CommandSplit.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\model\FTPServerModel.java
+c:\Users\KhanhNguyen9872\Documents\GitHub\ftp-simulation-java\ftp-simulation-server\src\main\java\com\ftpsimulation\server\view\FTPServerUI.java
