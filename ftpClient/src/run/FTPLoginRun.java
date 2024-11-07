@@ -8,7 +8,7 @@ import controller.FTPLoginController;
 
 public class FTPLoginRun {
 	public FTPLoginRun(Stage primaryStage) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
 		Parent parent = loader.load();
 		Scene scene = new Scene(parent);
 		primaryStage.setTitle("Login | FTP Simulation");

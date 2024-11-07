@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.*;
 import java.net.*;
-import java.util.StringTokenizer;
 import java.util.Map;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,7 +19,7 @@ class FTPClientHandler implements Runnable {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private byte[] eof = ByteBuffer.allocate(4).putInt(0xCAFEBABE).array();
     private FTPServerDatabase ftpServerDatabase;
-    private int isLoggedIn = -1;
+    private byte isLoggedIn = -1;
     private String Rnfr = null;
     private Socket clientSocket;
     private String username;

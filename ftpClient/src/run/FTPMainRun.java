@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 
 public class FTPMainRun {
 	public FTPMainRun(Socket sock) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main.fxml"));
 		Parent parent = loader.load();
 		Scene scene = new Scene(parent);
 		Stage primaryStage = new Stage();

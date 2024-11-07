@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -10,8 +9,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import lib.*;
 import view.FTPLoginView;
+import model.FTPConfig;
 import model.FTPLoginModel;
 import run.FTPMainRun;
 
@@ -59,8 +58,7 @@ public class FTPLoginController implements Initializable {
 		try {
 			sock = this.ftpLoginModel.connect(config);
 		} catch (Exception ex) {
-			this.ftpLoginView.showMessage(ex.getMessage());
-			return;
+			sock = null;
 		};
 		
 		if (sock != null) {
