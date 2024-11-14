@@ -48,6 +48,11 @@ public class FTPMainView {
 	}
 	
 	public void showMessageError(String msg) {
+		if (msg.equals("An established connection was aborted by the software in your host machine")) {
+			this.showMessageError("", "FTPServer has been closed! Application will exit!");
+			Runtime.getRuntime().halt(0);
+			return;
+		}
 		this.showMessageError("", msg);
 	}
 	

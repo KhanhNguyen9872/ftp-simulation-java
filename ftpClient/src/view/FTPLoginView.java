@@ -19,6 +19,9 @@ public class FTPLoginView {
 	}
 	
 	public void showMessage(String msg) {
+		if (msg.contains("Cannot connect to ")) {
+			msg = "Cannot connect to FTPServer";
+		}
 		this.showMessage("MESSAGE", msg);
 	}
 }

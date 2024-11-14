@@ -518,13 +518,12 @@ class FTPClientHandler implements Runnable {
     }
 
 	public void stop() {
-		// TODO Auto-generated method stub
 		try {
-			this.clientSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		this.isClosed = true;
+            this.clientSocket.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+        this.isClosed = true;
 	}
 }
